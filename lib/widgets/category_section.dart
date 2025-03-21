@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:mad_project/utils/app_colors.dart';
+import '../config/app_colors.dart'; // Updated import path
 
-class CategoriesSection extends StatefulWidget {
-  const CategoriesSection({super.key});
+class CategorySection extends StatefulWidget {
+  const CategorySection({super.key});
 
   @override
-  State<CategoriesSection> createState() => _CategoriesSectionState();
+  State<CategorySection> createState() => _CategorySectionState();
 }
 
-class _CategoriesSectionState extends State<CategoriesSection> {
+class _CategorySectionState extends State<CategorySection> {
   final PageController _pageController = PageController(viewportFraction: 0.9);
   int _currentPage = 0;
   late Timer _autoplayTimer;
@@ -41,14 +41,11 @@ class _CategoriesSectionState extends State<CategoriesSection> {
           curve: Curves.easeInOut,
         );
       } else {
-        // Instead of jumping directly, we'll do a "fake" infinite scroll
-        // by setting up a listener to detect when animation ends
         _pageController.animateToPage(
-          categories.length, // Animate to one beyond the last page
+          categories.length,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         ).then((_) {
-          // After animation completes, jump back to first page without animation
           _pageController.jumpToPage(0);
         });
       }
@@ -84,7 +81,7 @@ class _CategoriesSectionState extends State<CategoriesSection> {
           ),
         ),
         SizedBox(
-          height: 220, // Increased height from 200 to 220 to accommodate content
+          height: 250, // Increased height from 200 to 220 to accommodate content
           child: PageView.builder(
             controller: _pageController,
             itemCount: categories.length + 1, // Add one extra item for smooth looping
@@ -95,7 +92,7 @@ class _CategoriesSectionState extends State<CategoriesSection> {
               bool isActive = index == _currentPage;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                margin: EdgeInsets.symmetric(horizontal: 10, vertical: isActive ? 0 : 10),
+                margin: EdgeInsets.symmetric(horizontal: 10, vertical: isActive ? 5 : 10),
                 child: _buildCategoryCard(
                   category['title']!,
                   category['icon']!,
@@ -135,19 +132,18 @@ class _CategoriesSectionState extends State<CategoriesSection> {
 
   Widget _buildCategoryCard(String title, IconData icon, String jobs, List<String> services, bool isActive) {
     return Card(
-      color: AppColors.navyBlue,
+      color: AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: isActive ? 8 : 4,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left:20.0, right: 10.0, top: 20.0, bottom: 10.0),
         child: Column(
           mainAxisSize: MainAxisSize.min, // Use minimum space needed
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row with icon and title
             Row(
               children: [
-                Icon(icon, size: 28, color: AppColors.accentBlue), // Smaller icon
+                Icon(icon, size: 28, color: AppColors.navyBlue), // Smaller icon
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -158,14 +154,14 @@ class _CategoriesSectionState extends State<CategoriesSection> {
                         style: const TextStyle(
                           fontSize: 18, // Smaller font
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.navyBlue,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         '$jobs Jobs',  // Shorter text
-                        style: const TextStyle(fontSize: 12, color: Colors.white),
+                        style: const TextStyle(fontSize: 12, color: AppColors.navyBlue),
                       ),
                     ],
                   ),
@@ -176,17 +172,17 @@ class _CategoriesSectionState extends State<CategoriesSection> {
             const SizedBox(height: 15),
             
             LimitedBox(
-              maxHeight: 60, // Set maximum height for services section
+              maxHeight: 150, // Set maximum height for services section
               child: ListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(), // Don't scroll this part
                 padding: EdgeInsets.zero,
                 children: services.take(3).map((service) => 
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0, left: 5.0), // Reduced padding
+                    padding: const EdgeInsets.only(bottom: 2.0, left: 15.0), // Reduced padding
                     child: Text(
                       '• $service', 
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: AppColors.navyBlue, fontSize: 15),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -195,7 +191,7 @@ class _CategoriesSectionState extends State<CategoriesSection> {
               ),
             ),
             
-            const SizedBox(height: 20), // Push button to bottom
+            const SizedBox(height: 25), // Push button to bottom
             
             // Button
             Center(
@@ -204,13 +200,13 @@ class _CategoriesSectionState extends State<CategoriesSection> {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentBlue,
+                    backgroundColor: AppColors.tealDark,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   ),
                   child: const Text(
                     'VIEW MORE', 
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.white, fontSize: 13),
                   ),
                 ),
               ),
