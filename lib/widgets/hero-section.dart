@@ -17,7 +17,6 @@ class HeroSection extends StatelessWidget {
           const SizedBox(height: 40),
           _buildJoinButton(),
           const SizedBox(height: 40),
-          _buildFooterText(),
         ],
       ),
     );
@@ -29,15 +28,21 @@ class HeroSection extends StatelessWidget {
         style: TextStyle(
           fontFamily: 'BebasNeue',
           fontSize: 32,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w500,
           letterSpacing: 2.0,
           color: Colors.white, // Default color for all text
         ),
         children: [
-          TextSpan(text: 'WELCOME TO '),
+          TextSpan(
+            text: 'WELCOME TO ',
+            style: TextStyle(
+              fontSize: 42, // Blue color only for WELCOME TO
+            ),
+          ),
           TextSpan(
             text: 'FINDWORK',
             style: TextStyle(
+              fontSize: 42,
               color: AppColors.accentBlue, // Blue color only for FINDWORK
             ),
           ),
@@ -92,27 +97,30 @@ class HeroSection extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {},
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-        backgroundColor: Colors.blue,
-      ),
-      child: const Text(
-        'JOIN US NOW',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+        backgroundColor: AppColors.tealDark, // Blue color for the button
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0), // Reduced roundness (smaller value = less round)
         ),
       ),
-    );
-  }
-
-  Widget _buildFooterText() {
-    return const Text(
-      'Every connection built on',
-      style: TextStyle(
-        fontSize: 14,
-        fontStyle: FontStyle.italic,
-        color: Colors.grey,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'JOIN US NOW',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(width: 15), // Add some space between text and icon
+          Icon(
+            Icons.arrow_forward,
+            color: Colors.white,
+            size: 20, // Increase the size of the icon to make it wider
+          ),
+        ],
       ),
     );
   }

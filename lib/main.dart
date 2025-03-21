@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FindWork App',
-      home: const HomeScreen(), // Use the HomeScreen from navbar.dart
+      home: const HomeScreen(),  // Use the HomeScreen from navbar.dart
       theme: ThemeData(
         fontFamily: 'Lato', // Set Lato as the default font for the entire app
         primarySwatch: AppColors.primaryBlue,
