@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'widgets/navbar.dart'; // Import the navbar file
-import 'utils/app_colors.dart'; // Import the custom colors
+import 'views/home/home_screen.dart'; // Updated import path
+import 'config/app_colors.dart'; // Updated import path
 
 void main() => runApp(const MyApp());
 
