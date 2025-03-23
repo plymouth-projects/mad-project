@@ -10,7 +10,7 @@ class CategorySection extends StatefulWidget {
 }
 
 class _CategorySectionState extends State<CategorySection> {
-  final PageController _pageController = PageController(viewportFraction: 0.9);
+  late PageController _pageController;
   int _currentPage = 0;
   late Timer _autoplayTimer;
   
@@ -18,36 +18,28 @@ class _CategorySectionState extends State<CategorySection> {
   void initState() {
     super.initState();
     
-    // Setup page change listener
+    _pageController = PageController(
+      initialPage: 1000,
+      viewportFraction: 0.9,
+    );
+    
     _pageController.addListener(() {
-      int next = _pageController.page!.round();
-      if (_currentPage != next) {
-        setState(() {
-          _currentPage = next;
-        });
-      }
+      setState(() {
+        _currentPage = _pageController.page!.round() % categories.length;
+      });
     });
     
-    // Setup autoplay timer
     _startAutoplay();
   }
   
   void _startAutoplay() {
     _autoplayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_currentPage < categories.length - 1) {
+      if (_pageController.hasClients) {
         _pageController.animateToPage(
-          _currentPage + 1,
+          _pageController.page!.round() + 1,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
-      } else {
-        _pageController.animateToPage(
-          categories.length,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        ).then((_) {
-          _pageController.jumpToPage(0);
-        });
       }
     });
   }
@@ -81,25 +73,33 @@ class _CategorySectionState extends State<CategorySection> {
           ),
         ),
         SizedBox(
-          height: 250, // Increased height from 200 to 220 to accommodate content
+          height: 310, // Increased height from 200 to 220 to accommodate content
           child: PageView.builder(
             controller: _pageController,
-            itemCount: categories.length + 1, // Add one extra item for smooth looping
+            itemCount: null, // null for infinite scrolling
             itemBuilder: (context, index) {
-              // If we're at the "extra" item at the end, show the first item again
               final actualIndex = index % categories.length;
               final category = categories[actualIndex];
-              bool isActive = index == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: EdgeInsets.symmetric(horizontal: 10, vertical: isActive ? 5 : 10),
-                child: _buildCategoryCard(
-                  category['title']!,
-                  category['icon']!,
-                  category['jobs']!,
-                  category['services']!,
-                  isActive,
-                ),
+              
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  double value = 1.0;
+                  if (_pageController.position.haveDimensions) {
+                    value = (_pageController.page! - index).abs();
+                    value = (1 - (value * 0.3).clamp(0.0, 1.0));
+                  }
+                  return Transform.scale(
+                    scale: Curves.easeInOut.transform(value),
+                    child: _buildCategoryCard(
+                      category['title']!,
+                      category['icon']!,
+                      category['jobs']!,
+                      category['services']!,
+                      index == _pageController.page?.round(),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -122,7 +122,7 @@ class _CategorySectionState extends State<CategorySection> {
           height: 8,
           width: _currentPage % categories.length == index ? 24 : 8, // Use modulo for proper highlighting
           decoration: BoxDecoration(
-            color: _currentPage % categories.length == index ? AppColors.accentBlue : Colors.grey.withOpacity(0.5),
+            color: _currentPage % categories.length == index ? AppColors.accentBlue : Colors.grey[300],
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -134,75 +134,88 @@ class _CategorySectionState extends State<CategorySection> {
     return Card(
       color: AppColors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: isActive ? 8 : 4,
       child: Padding(
-        padding: const EdgeInsets.only(left:20.0, right: 10.0, top: 20.0, bottom: 10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Use minimum space needed
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(16.0),
+        child: Stack(
           children: [
-            Row(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, size: 28, color: AppColors.navyBlue), // Smaller icon
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 18, // Smaller font
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.navyBlue,
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentBlue,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Icon(icon, size: 28, color: AppColors.navyBlue),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 18, // Smaller font
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.navyBlue,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '$jobs Jobs Available',  // Shorter text
+                            style: const TextStyle(fontSize: 13, color: AppColors.navyBlue),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 15),
+                
+                LimitedBox(
+                  maxHeight: 150, // Set maximum height for services section
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(), // Don't scroll this part
+                    padding: EdgeInsets.zero,
+                    children: services.map((service) => 
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2.0, left: 25.0), // Reduced padding
+                        child: Text(
+                          '• $service', 
+                          style: const TextStyle(color: AppColors.navyBlue, fontSize: 15),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '$jobs Jobs',  // Shorter text
-                        style: const TextStyle(fontSize: 12, color: AppColors.navyBlue),
-                      ),
-                    ],
+                      )
+                    ).toList(),
                   ),
                 ),
+                
+                // Add space to ensure room for the positioned button
+                const SizedBox(height: 50),
               ],
             ),
             
-            const SizedBox(height: 15),
-            
-            LimitedBox(
-              maxHeight: 150, // Set maximum height for services section
-              child: ListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // Don't scroll this part
-                padding: EdgeInsets.zero,
-                children: services.take(3).map((service) => 
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2.0, left: 15.0), // Reduced padding
-                    child: Text(
-                      '• $service', 
-                      style: const TextStyle(color: AppColors.navyBlue, fontSize: 15),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  )
-                ).toList(),
-              ),
-            ),
-            
-            const SizedBox(height: 25), // Push button to bottom
-            
-            // Button
-            Center(
+            // Fixed position button
+            Positioned(
+              left: 25,
+              bottom: 5,
               child: SizedBox(
-                height: 30, // Fixed height button
+                height: 35,
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.tealDark,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0.0),
                   ),
                   child: const Text(
                     'VIEW MORE', 
@@ -224,24 +237,24 @@ final List<Map<String, dynamic>> categories = [
     'title': 'Home Maintenance',
     'icon': Icons.home_repair_service,
     'jobs': '22',
-    'services': ['Plumbing', 'Electrical Work', 'Carpentry'],
+    'services': ['Cleaning & Household Assistance', 'Plumbing & Water Systems', 'Electrical & Wiring Services', 'Carpentry & Furniture Work', 'Painting & Wall Finishing', 'Appliance Repair & Installation'],
   },
   {
     'title': 'Personal Care',
     'icon': Icons.person,
     'jobs': '18',
-    'services': ['House building', 'Commercial projects', 'Renovations'],
+    'services': ['Babysitter', 'Daycare Assistant', 'Elderly Care', 'Home Health Aide', 'Compainion Care Assistant', 'Patient Care Assistant'],
   },
   {
     'title': 'Construction and Renovations',
     'icon': Icons.build,
     'jobs': '11',
-    'services': ['Hair Care', 'Skincare & Facials', 'Makeup & Beauty'],
+    'services': ['Masonry & Building Construction', 'Carpentry & Woodwork', 'Plumbing & Water Systems', 'Electrical & Wiring Work', 'Painting & Finishing', 'General Construction Labor'],
   },
   {
     'title': 'Transport and Security',
     'icon': Icons.directions_car,
     'jobs': '33',
-    'services': ['Vehicle Rentals', 'CCTV & Surveillance Systems', 'Home & Office Security'],
+    'services': ['Security Guards', 'Drivers', 'CCTV Operators', 'Bodyguards', 'Security Alarm Installers'],
   },
 ];
