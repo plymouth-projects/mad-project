@@ -9,11 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_svg: ^2.0.7 
+  flutter_svg: ^2.0.7  # or latest version
   english_words: ^4.0.0
   cupertino_icons: ^1.0.2
   provider: ^6.1.1  # Updated to a newer version
-
+  # Remove carousel_slider package as we're using a custom implementation
+  
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +27,11 @@ flutter:
   assets:
     - assets/images/findworkd.svg
     - assets/images/findwork.svg
+    - assets/images/apply_job.png
+    - assets/images/hire_worker.png
+    - assets/images/job_posting.png
+    - assets/images/post_proficiency.png
+    
   fonts:
     - family: Lato
       fonts:
