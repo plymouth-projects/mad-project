@@ -13,6 +13,7 @@ dependencies:
   english_words: ^4.0.0
   cupertino_icons: ^1.0.2
   provider: ^6.1.1  # Updated to a newer version
+  intl: ^0.18.0  # Add this line
   # Remove carousel_slider package as we're using a custom implementation
   
 
@@ -31,6 +32,7 @@ flutter:
     - assets/images/hire_worker.png
     - assets/images/job_posting.png
     - assets/images/post_proficiency.png
+    - assets/images/electrician.png
     
   fonts:
     - family: Lato

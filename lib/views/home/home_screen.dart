@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mad_project/widgets/job_opportunities.dart';
 import '../../config/app_colors.dart';
 import '../../widgets/hero_section.dart';
 import '../../widgets/top_services.dart';
@@ -36,6 +37,7 @@ class HomeScreen extends StatelessWidget {
             const HeroSection(),
             const TopServices(),
             const CategorySection(),
+            const JobCarousel(),
           ],
         ),
       ),

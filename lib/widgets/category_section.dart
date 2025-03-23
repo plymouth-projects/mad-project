@@ -33,11 +33,11 @@ class _CategorySectionState extends State<CategorySection> {
   }
   
   void _startAutoplay() {
-    _autoplayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _autoplayTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_pageController.hasClients) {
         _pageController.animateToPage(
           _pageController.page!.round() + 1,
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 800),
           curve: Curves.easeInOut,
         );
       }
@@ -117,7 +117,7 @@ class _CategorySectionState extends State<CategorySection> {
       children: List.generate(
         categories.length, // Keep indicator count the same as actual categories
         (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 500),
           margin: const EdgeInsets.symmetric(horizontal: 5),
           height: 8,
           width: _currentPage % categories.length == index ? 24 : 8, // Use modulo for proper highlighting
