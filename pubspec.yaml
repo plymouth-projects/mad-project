@@ -33,6 +33,7 @@ flutter:
     - assets/images/job_posting.png
     - assets/images/post_proficiency.png
     - assets/images/electrician.png
+    - assets/images/plumber.png
     
   fonts:
     - family: Lato
