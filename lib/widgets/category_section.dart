@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:mad_project/widgets/carousel_indicator.dart';
 import '../config/app_colors.dart'; // Updated import path
 
 class CategorySection extends StatefulWidget {
@@ -11,7 +12,7 @@ class CategorySection extends StatefulWidget {
 
 class _CategorySectionState extends State<CategorySection> {
   late PageController _pageController;
-  int _currentPage = 0;
+  int currentPage = 0;
   late Timer _autoplayTimer;
   
   @override
@@ -25,7 +26,7 @@ class _CategorySectionState extends State<CategorySection> {
     
     _pageController.addListener(() {
       setState(() {
-        _currentPage = _pageController.page!.round() % categories.length;
+        currentPage = _pageController.page!.round() % categories.length;
       });
     });
     
@@ -105,28 +106,12 @@ class _CategorySectionState extends State<CategorySection> {
           ),
         ),
         const SizedBox(height: 15),
-        _buildPageIndicator(),
+        CarouselIndicator(
+          itemCount: categories.length, 
+          currentPage: currentPage
+        ),
         const SizedBox(height: 40),
       ],
-    );
-  }
-
-  Widget _buildPageIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        categories.length, // Keep indicator count the same as actual categories
-        (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          margin: const EdgeInsets.symmetric(horizontal: 5),
-          height: 8,
-          width: _currentPage % categories.length == index ? 24 : 8, // Use modulo for proper highlighting
-          decoration: BoxDecoration(
-            color: _currentPage % categories.length == index ? AppColors.accentBlue : Colors.grey[300],
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-      ),
     );
   }
 

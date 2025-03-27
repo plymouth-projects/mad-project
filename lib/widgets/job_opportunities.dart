@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
+import 'carousel_indicator.dart';
 
 class JobCarousel extends StatefulWidget {
   const JobCarousel({super.key});
@@ -13,7 +14,6 @@ class _JobCarouselState extends State<JobCarousel> {
   late PageController _pageController;
   int _currentPage = 0;
   late Timer _autoplayTimer;
-
   final List<Map<String, String>> jobs = [
     {
       'image': 'assets/images/electrician.png',
@@ -154,8 +154,11 @@ class _JobCarouselState extends State<JobCarousel> {
             },
           ),
         ),
-        const SizedBox(height: 10),
-        _buildPageIndicator(),
+        const SizedBox(height: 15),
+        CarouselIndicator(
+          itemCount: jobs.length,
+          currentPage: _currentPage,
+        ),
       ],
     );
   }
@@ -310,25 +313,6 @@ class _JobCarouselState extends State<JobCarousel> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildPageIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        jobs.length,
-        (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 8,
-          width: _currentPage == index ? 24 : 8,
-          decoration: BoxDecoration(
-            color: _currentPage == index ? Colors.blueAccent : Colors.white.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-      ),
     );
   }
 }

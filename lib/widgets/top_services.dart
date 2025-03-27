@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mad_project/widgets/carousel_indicator.dart';
 import 'dart:async';
 import '../config/app_colors.dart';
 
@@ -11,7 +12,7 @@ class TopServices extends StatefulWidget {
 
 class _TopServicesState extends State<TopServices> {
   late PageController _pageController;
-  int _currentPage = 0;
+  int currentPage = 0;
   late Timer _autoplayTimer;
   
   final List<Map<String, String>> services = [
@@ -41,15 +42,14 @@ class _TopServicesState extends State<TopServices> {
   void initState() {
     super.initState();
     
-    // Initialize with a large number to allow "infinite" scrolling
     _pageController = PageController(
       initialPage: 1000,
-      viewportFraction: 0.95,  // Changed from 0.85 to 0.95
+      viewportFraction: 0.95,
     );
     
     _pageController.addListener(() {
       setState(() {
-        _currentPage = _pageController.page!.round() % services.length;
+        currentPage = _pageController.page!.round() % services.length;
       });
     });
     
@@ -125,28 +125,11 @@ class _TopServicesState extends State<TopServices> {
             },
           ),
         ),
-        // Page indicator
-        Padding(
-          padding: const EdgeInsets.only(top: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              services.length,
-              (index) => AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                height: 8,
-                width: _currentPage == index ? 24 : 8,
-                decoration: BoxDecoration(
-                  color: _currentPage == index 
-                      ? AppColors.accentBlue 
-                      : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-          ),
-        ),
+        const SizedBox(height: 15),
+        CarouselIndicator(
+          itemCount: services.length, 
+          currentPage: currentPage
+        )
       ],
     );
   }
