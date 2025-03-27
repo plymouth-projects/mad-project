@@ -57,11 +57,11 @@ class _TopServicesState extends State<TopServices> {
   }
   
   void _startAutoplay() {
-    _autoplayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _autoplayTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_pageController.hasClients) {
         _pageController.animateToPage(
           _pageController.page!.round() + 1,
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 800),
           curve: Curves.easeInOut,
         );
       }
