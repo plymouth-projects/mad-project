@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'views/home/home_screen.dart'; // Updated import path
-import 'config/app_colors.dart'; // Updated import path
+import 'config/app_colors.dart';
+import 'config/app_routes.dart';
+import 'config/navigation.dart';
+import 'views/errors/not_found.dart'; // Updated import path
 
 void main() => runApp(const MyApp());
 
@@ -11,7 +13,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FindWork App',
-      home: const HomeScreen(),  // Use the HomeScreen from navbar.dart
+      navigatorKey: NavigationService.navigatorKey,
+      initialRoute: AppRoutes.home,
+      routes: AppRoutes.getRoutes(),
+      debugShowCheckedModeBanner: false,
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const NotFoundPage(),
+        );
+      },
+
       theme: ThemeData(
         fontFamily: 'Lato', // Set Lato as the default font for the entire app
         primarySwatch: AppColors.primaryBlue,
