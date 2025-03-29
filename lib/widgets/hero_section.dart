@@ -15,7 +15,7 @@ class HeroSection extends StatelessWidget {
           const SizedBox(height: 24),
           _buildDescriptionText(),
           const SizedBox(height: 40),
-          _buildJoinButton(),
+          _buildJoinButton(context),
           const SizedBox(height: 40),
         ],
       ),
@@ -93,9 +93,11 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildJoinButton() {
+  Widget _buildJoinButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        Navigator.of(context).pushNamed('/signup');
+      },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
         backgroundColor: AppColors.tealDark, // Blue color for the button
@@ -114,7 +116,7 @@ class HeroSection extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          SizedBox(width: 15), // Add some space between text and icon
+            SizedBox(width: 15), // Add some space between text and icon
           Icon(
             Icons.arrow_forward,
             color: Colors.white,
