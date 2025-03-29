@@ -34,6 +34,9 @@ flutter:
     - assets/images/post_proficiency.png
     - assets/images/electrician.png
     - assets/images/plumber.png
+    - assets/images/google_logo.png
+    - assets/images/microsoft_logo.png
+    - assets/images/auth_vector.png
     
   fonts:
     - family: Lato
