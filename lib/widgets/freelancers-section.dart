@@ -92,7 +92,7 @@ class _FreelancerCarouselState extends State<FreelancerCarousel> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0),
+          padding: EdgeInsets.only(top: 60.0, bottom: 20.0),
           child: Text(
             'TOP RATED FREELANCERS',
             style: TextStyle(
