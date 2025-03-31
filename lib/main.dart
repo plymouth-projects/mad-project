@@ -4,7 +4,10 @@ import 'config/app_routes.dart';
 import 'config/navigation.dart';
 import 'views/errors/not_found.dart'; // Updated import path
 
-void main() => runApp(const MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

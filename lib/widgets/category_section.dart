@@ -62,9 +62,10 @@ class _CategorySectionState extends State<CategorySection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0),
-          child: Text(
+        Container(
+          margin: const EdgeInsets.only(top: 40.0),
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          child: const Text(
             'FEATURED CATEGORIES',
             style: TextStyle(
               fontSize: 24,

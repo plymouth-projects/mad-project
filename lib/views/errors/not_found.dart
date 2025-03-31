@@ -6,7 +6,6 @@ class NotFoundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Page Not Found")),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -25,6 +24,11 @@ class NotFoundPage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pushReplacementNamed('/'); // Go to Home
               },
