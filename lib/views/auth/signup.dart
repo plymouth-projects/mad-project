@@ -56,7 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             height: 20,
                           ),
                           const SizedBox(height: 12),
-                          Container(
+                          SizedBox(
                             width: 200,
                             child: const Text(
                               "Start Your Career with Us",

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mad_project/widgets/carousel_indicator.dart';
-import '../config/app_colors.dart'; // Updated import path
+import '../../config/app_colors.dart'; // Updated import path
 
 class CategorySection extends StatefulWidget {
   const CategorySection({super.key});

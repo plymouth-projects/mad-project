@@ -220,27 +220,22 @@ class _ContactUsState extends State<ContactUs> {
         controller = _firstNameController;
         focusNode = _firstNameFocus;
         errorText = _firstNameError;
-        break;
       case 'Last Name':
         controller = _lastNameController;
         focusNode = _lastNameFocus;
         errorText = _lastNameError;
-        break;
       case 'Email':
         controller = _emailController;
         focusNode = _emailFocus;
         errorText = _emailError;
-        break;
       case 'Phone Number':
         controller = _phoneController;
         focusNode = _phoneFocus;
         errorText = _phoneError;
-        break;
       case 'Message':
         controller = _messageController;
         focusNode = _messageFocus;
         errorText = _messageError;
-        break;
       default:
         controller = TextEditingController();
         focusNode = FocusNode();
