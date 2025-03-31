@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../config/app_routes.dart';
-import '../../widgets/hero_section.dart';
+import '../../widgets/home/hero_section.dart';
 import '../../widgets/top_services.dart';
-import '../../widgets/category_section.dart';
-import '../../widgets/job_opportunities.dart';
-import '../../widgets/freelancers-section.dart';
-import '../../widgets/contact_us.dart';
+import '../../widgets/home/category_section.dart';
+import '../../widgets/home/job_opportunities.dart';
+import '../../widgets/home/freelancers-section.dart';
+import '../../widgets/home/contact_us.dart';
 import '../../widgets/navbar.dart';
 
 class HomeScreen extends StatelessWidget {

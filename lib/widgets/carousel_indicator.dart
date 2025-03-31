@@ -12,7 +12,7 @@ class CarouselIndicator extends StatelessWidget {
   final double spacing;
   
   const CarouselIndicator({
-    Key? key,
+    super.key,
     required this.itemCount,
     required this.currentPage,
     this.activeColor = AppColors.accentBlue,
@@ -21,7 +21,7 @@ class CarouselIndicator extends StatelessWidget {
     this.dotHeight = 8.0,
     this.dotWidth = 8.0,
     this.spacing = 4.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

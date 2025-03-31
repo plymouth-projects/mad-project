@@ -10,14 +10,14 @@ class CustomTextField extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.hintText,
     this.obscureText = false,
     this.suffixIcon,
     this.controller,
     this.padding = const EdgeInsets.only(bottom: 15),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
-import 'carousel_indicator.dart';
+import '../carousel_indicator.dart';
 
 class FreelancerCarousel extends StatefulWidget {
   const FreelancerCarousel({super.key});

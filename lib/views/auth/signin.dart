@@ -56,7 +56,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             height: 20,
                           ),
                           const SizedBox(height: 12),
-                          Container(
+                          SizedBox(
                             width: 200,
                             child: const Text(
                               "Welcome Back",

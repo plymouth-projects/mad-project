@@ -36,6 +36,7 @@ flutter:
     - assets/images/google_logo.png
     - assets/images/microsoft_logo.png
     - assets/images/auth_vector.png
+    - assets/images/babysitter.png
     
   fonts:
     - family: Lato
