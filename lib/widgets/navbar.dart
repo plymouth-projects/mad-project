@@ -41,8 +41,8 @@ class _AppNavDrawerState extends State<AppNavDrawer> {
             // Menu items with navigation
             _buildMenuItem('Home', Icons.home_outlined, AppRoutes.home),
             _buildMenuItem('Job Hub', Icons.work_outline, AppRoutes.jobHub),
-            _buildMenuItem('WorkForce Hub', Icons.people_outline, '/workforce-hub'),
-            _buildMenuItem('Business Hub', Icons.business_outlined, '/business-hub'),
+            _buildMenuItem('WorkForce Hub', Icons.people_outline, AppRoutes.workforceHub),
+            _buildMenuItem('Business Hub', Icons.business_outlined, AppRoutes.businessHub),
             _buildMenuItem('About Us', Icons.info_outline, '/about'),
 
             const Spacer(),

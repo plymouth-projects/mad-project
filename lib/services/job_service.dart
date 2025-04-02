@@ -1,5 +1,5 @@
 import 'package:mad_project/models/job_model.dart';
-import 'package:mad_project/constants/filter_options.dart';
+import 'package:mad_project/constants/jobs_filters.dart';
 
 /// Service class for handling job-related operations
 class JobService {
