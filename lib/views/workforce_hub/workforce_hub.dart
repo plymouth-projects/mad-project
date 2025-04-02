@@ -2,41 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
 import 'package:mad_project/config/app_routes.dart';
 import 'package:mad_project/widgets/navbar.dart';
-import 'package:mad_project/widgets/job_card.dart';
-import 'package:mad_project/services/job_service.dart';
-import 'package:mad_project/utils/date_utils.dart' as app_date_utils;
-import 'package:mad_project/constants/jobs_filters.dart';
+import 'package:mad_project/widgets/freelancer_card.dart';
+import 'package:mad_project/services/freelancer_service.dart';
+import 'package:mad_project/constants/freelancer_filters.dart';
 
-class JobHubScreen extends StatefulWidget {
-  const JobHubScreen({super.key});
+class WorkforceHubScreen extends StatefulWidget {
+  const WorkforceHubScreen({super.key});
 
   @override
-  State<JobHubScreen> createState() => _JobHubScreenState();
+  State<WorkforceHubScreen> createState() => _WorkforceHubScreenState();
 }
 
-class _JobHubScreenState extends State<JobHubScreen> {
+class _WorkforceHubScreenState extends State<WorkforceHubScreen> {
   // Selected filter values
-  String? _selectedEmploymentType;
-  String? _selectedSeniorityLevel;
-  String? _selectedSalaryRange;
+  String? _selectedSkill;
+  String? _selectedLevel;
+  String? _selectedAvailability;
   
-  // Job service instance
-  final JobService _jobService = JobService();
+  // Freelancer service instance
+  final FreelancerService _freelancerService = FreelancerService();
   
-  // Get filtered jobs
-  List<Map<String, String>> get filteredJobs {
-    return _jobService.getFilteredJobs(
-      employmentType: _selectedEmploymentType,
-      seniorityLevel: _selectedSeniorityLevel,
-      salaryRange: _selectedSalaryRange,
-    );
+  // Filter options from constants
+  final List<String> _skillOptions = FreelancerFilters.skillOptions;
+  final List<String> _levelOptions = FreelancerFilters.levelOptions;
+  final List<String> _availabilityOptions = FreelancerFilters.availabilityOptions;
+  
+  // Get filtered freelancers
+  List<Map<String, dynamic>> get filteredFreelancers {
+    final allFreelancers = _freelancerService.getFreelancers();
+    
+    return allFreelancers.where((freelancer) {
+      // Filter by skill
+      if (_selectedSkill != null) {
+        final List<String> skills = freelancer['skills'] as List<String>;
+        if (!skills.contains(_selectedSkill)) {
+          return false;
+        }
+      }
+      
+      // Filter by level
+      if (_selectedLevel != null && freelancer['level'] != _selectedLevel) {
+        return false;
+      }
+      
+      // Filter by availability
+      if (_selectedAvailability != null && freelancer['availability'] != _selectedAvailability) {
+        return false;
+      }
+      
+      return true;
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarWithDrawer(currentRoute: AppRoutes.jobHub),
-      drawer: AppNavDrawer(currentRoute: AppRoutes.jobHub),
+      appBar: AppBarWithDrawer(currentRoute: AppRoutes.workforceHub),
+      drawer: AppNavDrawer(currentRoute: AppRoutes.workforceHub),
       body: _buildBody(),
     );
   }
@@ -51,7 +73,7 @@ class _JobHubScreenState extends State<JobHubScreen> {
           const SizedBox(height: 16),
           _buildResultCount(),
           const SizedBox(height: 16),
-          _buildJobList(),
+          _buildFreelancerList(),
         ],
       ),
     );
@@ -64,7 +86,7 @@ class _JobHubScreenState extends State<JobHubScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            'JOB LISTINGS',
+            'WORKFORCE',
             style: TextStyle(
               color: Colors.white, 
               fontSize: 22, 
@@ -81,41 +103,39 @@ class _JobHubScreenState extends State<JobHubScreen> {
     return Container(
       margin: const EdgeInsets.only(left: 10.0),
       child: Text(
-        '${filteredJobs.length} results',
+        '${filteredFreelancers.length} results',
         style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
     );
   }
 
-  Widget _buildJobList() {
+  Widget _buildFreelancerList() {
     return Expanded(
       child: ListView.builder(
-        itemCount: filteredJobs.length,
+        itemCount: filteredFreelancers.length,
         itemBuilder: (context, index) {
-          final job = filteredJobs[index];
+          final freelancer = filteredFreelancers[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: SizedBox(
-              height: 300,
-              child: JobCard(
-                scale: 1.0,
-                job: job,
-                calculateDaysLeft: app_date_utils.DateUtils.calculateDaysLeft,
-                onApplyPressed: () => _handleJobApplication(job),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.freelancerDetails,
+                  arguments: freelancer,
+                );
+              },
+              child: SizedBox(
+                height: 450, // Adjusted height for the freelancer card
+                child: FreelancerCard(
+                  scale: 1.0,
+                  freelancer: freelancer,
+                ),
               ),
             ),
           );
         },
       ),
-    );
-  }
-
-  void _handleJobApplication(Map<String, String> job) {
-    // Navigate to job details page instead of showing a dialog
-    Navigator.pushNamed(
-      context, 
-      AppRoutes.jobDetails,
-      arguments: job,
     );
   }
 
@@ -149,7 +169,7 @@ class _JobHubScreenState extends State<JobHubScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Filter Jobs',
+                'Filter Freelancers',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -158,33 +178,33 @@ class _JobHubScreenState extends State<JobHubScreen> {
               ),
               const SizedBox(height: 16),
               _buildModalFilterCategory(
-                'Types of Employment', 
-                _selectedEmploymentType,
-                _getEmploymentTypeOptions(),
+                'Skills', 
+                _selectedSkill,
+                _getSkillOptions(),
                 (value) {
-                  setState(() => _selectedEmploymentType = value);
+                  setState(() => _selectedSkill = value);
                   setModalState(() {}); // Update modal state
                 },
                 setModalState,
               ),
               const SizedBox(height: 12),
               _buildModalFilterCategory(
-                'Experience Level',
-                _selectedSeniorityLevel,
-                _getSeniorityLevelOptions(),
+                'Level',
+                _selectedLevel,
+                _getLevelOptions(),
                 (value) {
-                  setState(() => _selectedSeniorityLevel = value);
+                  setState(() => _selectedLevel = value);
                   setModalState(() {}); // Update modal state
                 },
                 setModalState,
               ),
               const SizedBox(height: 12),
               _buildModalFilterCategory(
-                'Salary Range',
-                _selectedSalaryRange,
-                _getSalaryRangeOptions(),
+                'Availability',
+                _selectedAvailability,
+                _getAvailabilityOptions(),
                 (value) {
-                  setState(() => _selectedSalaryRange = value);
+                  setState(() => _selectedAvailability = value);
                   setModalState(() {}); // Update modal state
                 },
                 setModalState,
@@ -197,9 +217,9 @@ class _JobHubScreenState extends State<JobHubScreen> {
                     TextButton(
                       onPressed: () {
                         setState(() {
-                          _selectedEmploymentType = null;
-                          _selectedSeniorityLevel = null;
-                          _selectedSalaryRange = null;
+                          _selectedSkill = null;
+                          _selectedLevel = null;
+                          _selectedAvailability = null;
                         });
                         setModalState(() {}); // Update modal state
                       },
@@ -217,37 +237,37 @@ class _JobHubScreenState extends State<JobHubScreen> {
                     ),                  
                     const SizedBox(width: 16),
                     TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      backgroundColor: AppColors.tealDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        backgroundColor: AppColors.tealDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      // Trigger UI refresh based on filters
-                      setState(() {});
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Trigger UI refresh based on filters
+                        setState(() {});
+                      },
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF0E3A5D),
                       ),
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF0E3A5D),
+                      child: const Text('Apply'),
                     ),
-                    child: const Text('Apply'),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -300,24 +320,24 @@ class _JobHubScreenState extends State<JobHubScreen> {
     );
   }
 
-  List<DropdownMenuItem<String>> _getEmploymentTypeOptions() {
-    return FilterOptions.employmentTypes.map((type) => DropdownMenuItem(
-      value: type,
-      child: Text(type, style: const TextStyle(color: Colors.white)),
+  List<DropdownMenuItem<String>> _getSkillOptions() {
+    return _skillOptions.map((skill) => DropdownMenuItem(
+      value: skill,
+      child: Text(skill, style: const TextStyle(color: Colors.white)),
     )).toList();
   }
   
-  List<DropdownMenuItem<String>> _getSeniorityLevelOptions() {
-    return FilterOptions.seniorityLevels.map((level) => DropdownMenuItem(
+  List<DropdownMenuItem<String>> _getLevelOptions() {
+    return _levelOptions.map((level) => DropdownMenuItem(
       value: level,
       child: Text(level, style: const TextStyle(color: Colors.white)),
     )).toList();
   }
 
-  List<DropdownMenuItem<String>> _getSalaryRangeOptions() {
-    return FilterOptions.salaryRanges.map((range) => DropdownMenuItem(
-      value: range,
-      child: Text(range, style: const TextStyle(color: Colors.white)),
+  List<DropdownMenuItem<String>> _getAvailabilityOptions() {
+    return _availabilityOptions.map((availability) => DropdownMenuItem(
+      value: availability,
+      child: Text(availability, style: const TextStyle(color: Colors.white)),
     )).toList();
   }
 }

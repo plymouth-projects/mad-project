@@ -1,34 +1,31 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../carousel_indicator.dart';
-import '../job_card.dart';
-import '../../models/job_model.dart';
-import '../../services/job_service.dart';
-import '../../utils/date_utils.dart' as app_date_utils;
+import '../freelancer_card.dart';
+import '../../services/freelancer_service.dart';
 import '../../config/app_routes.dart';
 
-class JobCarousel extends StatefulWidget {
-  const JobCarousel({super.key});
+class FreelancerCarousel extends StatefulWidget {
+  const FreelancerCarousel({super.key});
 
   @override
-  State<JobCarousel> createState() => _JobCarouselState();
+  State<FreelancerCarousel> createState() => _FreelancerCarouselState();
 }
 
-class _JobCarouselState extends State<JobCarousel> {
+class _FreelancerCarouselState extends State<FreelancerCarousel> {
   late PageController _pageController;
   int _currentPage = 0;
   late Timer _autoplayTimer;
-  late List<Job> jobs;
-  final JobService _jobService = JobService();
+  late List<Map<String, dynamic>> freelancers;
+  final FreelancerService _freelancerService = FreelancerService();
 
   @override
   void initState() {
     super.initState();
-    jobs = _jobService.getAllJobObjects();
-    
+    freelancers = _freelancerService.getFreelancers();
     _pageController = PageController(
       viewportFraction: 0.92,
-      initialPage: jobs.length * 1000,
+      initialPage: freelancers.length * 1000,
     );
     _startAutoplay();
   }
@@ -57,9 +54,9 @@ class _JobCarouselState extends State<JobCarousel> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0),
+          padding: EdgeInsets.only(top: 60.0, bottom: 20.0),
           child: Text(
-            'LATEST JOB OPPORTUNITIES',
+            'TOP RATED FREELANCERS',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -68,40 +65,31 @@ class _JobCarouselState extends State<JobCarousel> {
           ),
         ),
         SizedBox(
-          height: 320,
+          height: 450,
           width: MediaQuery.of(context).size.width,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (int page) {
               setState(() {
-                _currentPage = page % jobs.length;
+                _currentPage = page % freelancers.length;
               });
             },
             itemBuilder: (context, index) {
-              final jobIndex = index % jobs.length;
-              return _buildJobCard(jobs[jobIndex], index);
+              final freelancerIndex = index % freelancers.length;
+              return _buildFreelancerCard(freelancers[freelancerIndex], index);
             },
           ),
         ),
         const SizedBox(height: 15),
         CarouselIndicator(
-          itemCount: jobs.length,
+          itemCount: freelancers.length,
           currentPage: _currentPage,
         ),
       ],
     );
   }
 
-    void _handleJobApplication(Map<String, String> job) {
-      // Navigate to job details page instead of showing a dialog
-      Navigator.pushNamed(
-        context, 
-        AppRoutes.jobDetails,
-        arguments: job,
-      );
-    }
-
-  Widget _buildJobCard(Job job, int index) {
+  Widget _buildFreelancerCard(Map<String, dynamic> freelancer, int index) {
     return AnimatedBuilder(
       animation: _pageController,
       builder: (context, child) {
@@ -110,24 +98,18 @@ class _JobCarouselState extends State<JobCarousel> {
           double pageOffset = (_pageController.page ?? 0) - index;
           scale = (1 - (pageOffset.abs() * 0.2)).clamp(0.5, 1.0);
         }
-        // Convert the dynamic map to a string map
-        Map<String, String> stringJob = {};
-        job.toMap().forEach((key, value) {
-          stringJob[key] = value?.toString() ?? '';
-        });
-        
-        return JobCard(
-          job: stringJob,
-          scale: scale,
-          calculateDaysLeft: (String? deadline) => app_date_utils.DateUtils.calculateDaysLeft(deadline),
-          onApplyPressed: () {
-            Map<String, String> jobMap = {};
-            job.toMap().forEach((key, value) {
-              jobMap[key] = value?.toString() ?? '';
-            });
-            _handleJobApplication(jobMap);
-            _jobService.applyForJob(jobMap, {});
+        return GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.freelancerDetails,
+              arguments: freelancer,
+            );
           },
+          child: FreelancerCard(
+            freelancer: freelancer,
+            scale: scale,
+          ),
         );
       },
     );

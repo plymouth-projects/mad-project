@@ -4,9 +4,12 @@ import '../../widgets/home/hero_section.dart';
 import '../../widgets/top_services.dart';
 import '../../widgets/home/category_section.dart';
 import '../../widgets/home/job_opportunities.dart';
-import '../../widgets/home/freelancers-section.dart';
+import '../../widgets/home/freelancers_section.dart';
 import '../../widgets/home/contact_us.dart';
 import '../../widgets/navbar.dart';
+import '../../widgets/home/business_section.dart';
+import '../../widgets/home/footer.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -24,7 +27,9 @@ class HomeScreen extends StatelessWidget {
             const CategorySection(),
             const JobCarousel(),
             const FreelancerCarousel(),
+            const CompaniesSection(),
             const ContactUs(),
+            const Footer(),
           ],
         ),
       ),
