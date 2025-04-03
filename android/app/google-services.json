@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412890681824",
+    "project_id": "findwork-app",
+    "storage_bucket": "findwork-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412890681824:android:28685156eb7c1840839b85",
+        "android_client_info": {
+          "package_name": "com.example.mad_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWZHf-Se1FNYrUExd_hBuTHdi63cg1PxA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

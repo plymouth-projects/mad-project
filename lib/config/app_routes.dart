@@ -8,6 +8,7 @@ import '../views/workforce_hub/workforce_hub.dart';
 import '../views/freelancer_details/freelancer_details.dart';
 import '../views/business_hub/business_hub.dart';
 import '../views/business_details/business_details.dart';
+import '../views/dashboard/user_dashboard.dart'; // Add import for dashboard
 // Import other screens as they are implemented
 
 class AppRoutes {
@@ -20,6 +21,7 @@ class AppRoutes {
   static const String businessHub = '/businessHub';
   static const String freelancerDetails = '/freelancerDetails';
   static const String businessDetails = '/businessDetails';
+  static const String dashboard = '/dashboard'; // Add dashboard route
   // Define other route names as needed
   
   static Map<String, WidgetBuilder> getRoutes() {
@@ -36,6 +38,7 @@ class AppRoutes {
         final company = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
         return BusinessDetails(company: company);
       },
+      dashboard: (context) => const UserDashboard(), // Add dashboard route builder
       // Add other routes as they are implemented
     };
   }

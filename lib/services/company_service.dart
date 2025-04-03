@@ -1,6 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class CompanyService {
-  List<Map<String, dynamic>> getCompanies() {
-    return [
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _collectionPath = 'companies';
+
+  // Method to initialize Firestore with company data (call this once)
+  /* Future<void> initializeCompaniesData() async {
+    final companies = [
       {
         'id': 1,
         'name': 'TechGiant Corp',
@@ -87,5 +93,35 @@ class CompanyService {
         ],
       },
     ];
+
+    // Add each company to Firestore
+    for (var company in companies) {
+      await _firestore.collection(_collectionPath).doc(company['id'].toString()).set(company);
+    }
+  } */
+
+  // Get all companies from Firestore
+  Future<List<Map<String, dynamic>>> getCompanies() async {
+    try {
+      final snapshot = await _firestore.collection(_collectionPath).get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      print('Error getting companies: $e');
+      return [];
+    }
+  }
+  
+  // Get a single company by ID
+  Future<Map<String, dynamic>?> getCompanyById(String id) async {
+    try {
+      final doc = await _firestore.collection(_collectionPath).doc(id).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      print('Error getting company by ID: $e');
+      return null;
+    }
   }
 }

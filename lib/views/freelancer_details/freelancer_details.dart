@@ -2,35 +2,127 @@ import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
 import 'package:mad_project/config/app_routes.dart';
 import 'package:mad_project/widgets/navbar.dart';
+import 'package:mad_project/services/freelancer_service.dart';
 
-class FreelancerDetailsScreen extends StatelessWidget {
+class FreelancerDetailsScreen extends StatefulWidget {
   const FreelancerDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic> freelancer = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+  State<FreelancerDetailsScreen> createState() => _FreelancerDetailsScreenState();
+}
 
+class _FreelancerDetailsScreenState extends State<FreelancerDetailsScreen> {
+  bool _isLoading = false;
+  String _errorMessage = '';
+  Map<String, dynamic>? _freelancerData;
+  final FreelancerService _freelancerService = FreelancerService();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Get the arguments passed to this screen
+    final args = ModalRoute.of(context)!.settings.arguments;
+    
+    if (args is Map<String, dynamic>) {
+      // If full data is passed, use it directly
+      setState(() {
+        _freelancerData = args;
+      });
+    } else if (args is String) {
+      // If only an ID is passed, fetch the full data
+      _loadFreelancerData(args);
+    }
+  }
+  
+  Future<void> _loadFreelancerData(String freelancerId) async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+      
+      final data = await _freelancerService.getFreelancerById(freelancerId);
+      
+      setState(() {
+        _freelancerData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load freelancer details: $e';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBarWithDrawer(currentRoute: AppRoutes.workforceHub),
       drawer: AppNavDrawer(currentRoute: AppRoutes.workforceHub),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(freelancer),
-              const SizedBox(height: 24),
-              _buildProfileSection(freelancer),
-              const SizedBox(height: 24),
-              _buildSkillsSection(freelancer),
-              const SizedBox(height: 24),
-              _buildExperienceSection(freelancer),
-              const SizedBox(height: 24),
-              _buildHireButton(context, freelancer),
-              const SizedBox(height: 40),
-            ],
-          ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+    
+    if (_errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _errorMessage,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                final args = ModalRoute.of(context)!.settings.arguments;
+                if (args is String) {
+                  _loadFreelancerData(args);
+                }
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_freelancerData == null) {
+      return const Center(
+        child: Text(
+          'No freelancer data found.',
+          style: TextStyle(color: Colors.white),
+        ),
+      );
+    }
+    
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(_freelancerData!),
+            const SizedBox(height: 24),
+            _buildProfileSection(_freelancerData!),
+            const SizedBox(height: 24),
+            _buildSkillsSection(_freelancerData!),
+            const SizedBox(height: 24),
+            _buildExperienceSection(_freelancerData!),
+            const SizedBox(height: 24),
+            _buildHireButton(context, _freelancerData!),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
@@ -47,20 +139,20 @@ class FreelancerDetailsScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.pop(context),
-            ),
-            const Text(
-              'FREELANCER DETAILS',
-              style: TextStyle(
-                color: Colors.white, 
-                fontSize: 20, 
-                fontWeight: FontWeight.bold
               ),
-            ),
-            const SizedBox(width: 40),
-          ],
-        ),
-      ],
-    )
+              const Text(
+                'FREELANCER DETAILS',
+                style: TextStyle(
+                  color: Colors.white, 
+                  fontSize: 20, 
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              const SizedBox(width: 40),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

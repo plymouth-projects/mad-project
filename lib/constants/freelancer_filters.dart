@@ -23,8 +23,8 @@ class FreelancerFilters {
   /// Availability options for filtering freelancers
   static const List<String> availabilityOptions = [
     'Full-Time',
-    'Part-Time'
-    'Freelance'
+    'Part-Time',
+    'Freelance',
     'On-Time'
   ];
 }

@@ -5,7 +5,7 @@ import '../../config/navigation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class Footer extends StatelessWidget {
-  const Footer({Key? key}) : super(key: key);
+  const Footer({super.key});
 
   @override
   Widget build(BuildContext context) {

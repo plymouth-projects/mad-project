@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ContactUs extends StatefulWidget {
   const ContactUs({super.key});
@@ -10,6 +11,7 @@ class ContactUs extends StatefulWidget {
 
 class _ContactUsState extends State<ContactUs> {
   String? _selectedArea;
+  bool _isSubmitting = false;
 
   // Controllers for the text fields
   final TextEditingController _firstNameController = TextEditingController();
@@ -191,8 +193,10 @@ class _ContactUsState extends State<ContactUs> {
                       backgroundColor: AppColors.tealDark,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                     ),
-                    onPressed: () =>{},
-                    child: const Text("Send Message", style: TextStyle(color: Colors.white)),
+                    onPressed: _isSubmitting ? null : _submitForm,
+                    child: _isSubmitting 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Send Message", style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -201,6 +205,109 @@ class _ContactUsState extends State<ContactUs> {
         ],
       ),
     );
+  }
+  
+  // Validate all fields and return true if all are valid
+  bool _validateAllFields() {
+    _validateFirstName();
+    _validateLastName();
+    _validateEmail();
+    _validatePhone();
+    _validateMessage();
+    
+    // Check if any errors exist
+    return _firstNameError == null &&
+           _lastNameError == null &&
+           _emailError == null &&
+           _phoneError == null &&
+           _messageError == null &&
+           _selectedArea != null;
+  }
+  
+  // Submit form data to Firestore
+  void _submitForm() async {
+    // Validate all fields
+    if (!_validateAllFields()) {
+      // Show error message if any field is invalid
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields correctly'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      
+      // If area is not selected, show specific error
+      if (_selectedArea == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select an area'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
+    // Set submitting state to show loading indicator
+    setState(() {
+      _isSubmitting = true;
+    });
+    
+    try {
+      // Get a reference to the Firestore collection
+      final contactCollection = FirebaseFirestore.instance.collection('contacts');
+      
+      // Create a data map to send to Firestore
+      final contactData = {
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'area': _selectedArea,
+        'message': _messageController.text,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      
+      // Add the document to Firestore
+      await contactCollection.add(contactData);
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Message sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Clear all fields after successful submission
+        _firstNameController.clear();
+        _lastNameController.clear();
+        _emailController.clear();
+        _phoneController.clear();
+        _messageController.clear();
+        setState(() {
+          _selectedArea = null;
+        });
+      }
+    } catch (e) {
+      // Show error message if submission fails
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send message: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      // Reset submitting state
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
   
   // Validate email format

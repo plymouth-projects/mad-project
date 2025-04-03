@@ -4,6 +4,7 @@ import 'package:mad_project/config/app_colors.dart';
 import 'package:mad_project/widgets/navbar.dart';
 import '../../config/app_routes.dart';
 import '../../widgets/text_field.dart';
+import '../../services/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -14,6 +15,83 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  String? _errorMessage;
+  
+  // Controllers for form fields
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  
+  // Auth service instance
+  final AuthService _authService = AuthService();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // Sign in with email and password
+  Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final success = await _authService.signIn(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (success) {
+        // Navigate to home or dashboard
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
+      } else {
+        setState(() {
+          _errorMessage = "Invalid email or password";
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "An error occurred: ${e.toString()}";
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Sign in with Google
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final success = await _authService.signInWithGoogle();
+
+      if (success) {
+        // Navigate to home or dashboard
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
+      } else {
+        setState(() {
+          _errorMessage = "Google sign-in failed";
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "An error occurred: ${e.toString()}";
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +102,7 @@ class _SignInScreenState extends State<SignInScreen> {
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 80, 20, 20), // Removed top padding completely
+            padding: const EdgeInsets.fromLTRB(20, 80, 20, 20),
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -78,10 +156,29 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 30),
                   
+                  // Error message if any
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade300),
+                      ),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                      ),
+                    ),
+                  
                   // Form Fields
                   CustomTextField(
                     label: "Email",
                     hintText: "Enter your email address",
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                   ),
                   _buildPasswordField(),
                   
@@ -114,20 +211,28 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Handle login logic
-                        },
+                        onPressed: _isLoading ? null : _signIn,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryBlue,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
+                          disabledBackgroundColor: AppColors.primaryBlue.withOpacity(0.6),
                         ),
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+                        child: _isLoading 
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              "Login",
+                              style: TextStyle(fontSize: 16, color: Colors.white),
+                            ),
                       ),
                     ),
                   ),
@@ -172,9 +277,49 @@ class _SignInScreenState extends State<SignInScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildSocialButton("assets/images/microsoft_logo.png", "Microsoft"),
+                      InkWell(
+                        onTap: () {
+                          // Microsoft login not implemented yet
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              Image.asset("assets/images/microsoft_logo.png", width: 24, height: 24),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Microsoft",
+                                style: const TextStyle(
+                                  color: AppColors.primaryBlue,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(width: 20),
-                      _buildSocialButton("assets/images/google_logo.png", "Google"),
+                      InkWell(
+                        onTap: _isLoading ? null : _signInWithGoogle,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              Image.asset("assets/images/google_logo.png", width: 24, height: 24),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Google",
+                                style: const TextStyle(
+                                  color: AppColors.primaryBlue,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
 
@@ -226,6 +371,7 @@ class _SignInScreenState extends State<SignInScreen> {
     return CustomTextField(
       label: "Password",
       hintText: "Enter your password",
+      controller: _passwordController,
       obscureText: !_isPasswordVisible,
       suffixIcon: IconButton(
         icon: Icon(
@@ -238,32 +384,6 @@ class _SignInScreenState extends State<SignInScreen> {
             _isPasswordVisible = !_isPasswordVisible;
           });
         },
-      ),
-    );
-  }
-
-  // Social Button Widget
-  Widget _buildSocialButton(String assetPath, String label) {
-    return InkWell(
-      onTap: () {
-        // Handle social login
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Image.asset(assetPath, width: 24, height: 24),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.primaryBlue,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

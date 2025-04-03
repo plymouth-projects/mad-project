@@ -17,18 +17,41 @@ class _CompaniesSectionState extends State<CompaniesSection> {
   late PageController _pageController;
   int _currentPage = 0;
   Timer? _autoplayTimer;
-  late List<Map<String, dynamic>> companies;
+  List<Map<String, dynamic>> companies = [];
   final CompanyService _companyService = CompanyService();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    companies = _companyService.getCompanies();
-    _initializePageController();
-    _startAutoplay();
+    _fetchCompanies();
+  }
+
+  Future<void> _fetchCompanies() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final fetchedCompanies = await _companyService.getCompanies();
+      setState(() {
+        companies = fetchedCompanies;
+        _isLoading = false;
+      });
+      // Initialize controllers after data is loaded
+      _initializePageController();
+      _startAutoplay();
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching companies: $e');
+    }
   }
 
   void _initializePageController() {
+    if (companies.isEmpty) return;
+    
     _pageController = PageController(
       viewportFraction: 0.92,
       initialPage: companies.length * 1000,
@@ -36,6 +59,8 @@ class _CompaniesSectionState extends State<CompaniesSection> {
   }
 
   void _startAutoplay() {
+    if (companies.isEmpty) return;
+    
     _autoplayTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_pageController.hasClients) {
         _pageController.nextPage(
@@ -49,7 +74,9 @@ class _CompaniesSectionState extends State<CompaniesSection> {
   @override
   void dispose() {
     _autoplayTimer?.cancel();
-    _pageController.dispose();
+    if (companies.isNotEmpty) {
+      _pageController.dispose();
+    }
     super.dispose();
   }
 
@@ -72,14 +99,38 @@ class _CompaniesSectionState extends State<CompaniesSection> {
         SizedBox(
           height: 550,
           width: MediaQuery.of(context).size.width,
-          child: _buildCompanyCarousel(),
+          child: _isLoading
+              ? _buildLoadingIndicator()
+              : companies.isEmpty
+                  ? _buildNoCompaniesMessage()
+                  : _buildCompanyCarousel(),
         ),
-        const SizedBox(height: 15),
-        CarouselIndicator(
-          itemCount: companies.length,
-          currentPage: _currentPage,
-        ),
+        if (!_isLoading && companies.isNotEmpty) 
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0),
+            child: CarouselIndicator(
+              itemCount: companies.length,
+              currentPage: _currentPage,
+            ),
+          ),
       ],
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: AppColors.white,
+      ),
+    );
+  }
+
+  Widget _buildNoCompaniesMessage() {
+    return const Center(
+      child: Text(
+        'No companies available',
+        style: TextStyle(color: AppColors.white, fontSize: 16),
+      ),
     );
   }
 

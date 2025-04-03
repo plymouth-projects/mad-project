@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
             const JobCarousel(),
             const FreelancerCarousel(),
             const CompaniesSection(),
-            const ContactUs(),
+            const ContactUs(), 
             const Footer(),
           ],
         ),

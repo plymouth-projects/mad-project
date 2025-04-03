@@ -27,11 +27,39 @@ class _BusinessHubState extends State<BusinessHub> {
   final List<String> _sizeOptions = BusinessFilters.sizeOptions;
   final List<String> _locationOptions = BusinessFilters.locationOptions;
   
+  // Companies data
+  List<Map<String, dynamic>> _allCompanies = [];
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _fetchCompanies();
+  }
+  
+  Future<void> _fetchCompanies() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final companies = await _companyService.getCompanies();
+      setState(() {
+        _allCompanies = companies;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error fetching companies: $e');
+    }
+  }
+  
   // Get filtered companies
   List<Map<String, dynamic>> get filteredCompanies {
-    final allCompanies = _companyService.getCompanies();
     return BusinessFilters.applyFilters(
-      allCompanies,
+      _allCompanies,
       industry: _selectedIndustry,
       size: _selectedSize,
       location: _selectedLocation,
@@ -50,6 +78,12 @@ class _BusinessHubState extends State<BusinessHub> {
   }
 
   Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+    
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../config/app_colors.dart';
 import '../config/app_routes.dart';
 import '../config/navigation.dart';
+import '../services/auth_service.dart'; // Add import for AuthService
 
 class AppNavDrawer extends StatefulWidget {
   final String currentRoute;
@@ -19,6 +20,8 @@ class AppNavDrawer extends StatefulWidget {
 class _AppNavDrawerState extends State<AppNavDrawer> {
   @override
   Widget build(BuildContext context) {
+    final bool isSignedIn = AuthService.isUserSignedIn();
+
     return Drawer(
       child: Container(
         color: AppColors.navyBlue,
@@ -49,8 +52,12 @@ class _AppNavDrawerState extends State<AppNavDrawer> {
 
             const Divider(color: Colors.white24, height: 1),
             _buildMenuItem('Settings', Icons.settings_outlined, '/settings'),
-            _buildMenuItem('Log In / Sign Up', Icons.login_outlined, AppRoutes.signin),
-            
+
+            // Conditionally show Login or Logout based on authentication status
+            isSignedIn
+                ? _buildLogoutMenuItem()
+                : _buildMenuItem('Log In / Sign Up', Icons.login_outlined, AppRoutes.signin),
+
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
               child: Text(
@@ -65,9 +72,34 @@ class _AppNavDrawerState extends State<AppNavDrawer> {
     );
   }
 
+  Widget _buildLogoutMenuItem() {
+    return ListTile(
+      leading: const Icon(
+        Icons.logout_outlined,
+        color: Colors.white,
+        size: 24,
+      ),
+      title: const Text(
+        'Logout',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      onTap: () async {
+        Navigator.pop(context); // Close the drawer first
+        await AuthService().signOut();
+        NavigationService.navigateTo(AppRoutes.home);
+      },
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+    );
+  }
+
   Widget _buildMenuItem(String title, IconData icon, String routeName) {
     final bool isSelected = widget.currentRoute == routeName;
-    
+
     return ListTile(
       leading: Icon(
         icon,
@@ -96,9 +128,9 @@ class _AppNavDrawerState extends State<AppNavDrawer> {
 
 class AppBarWithDrawer extends StatelessWidget implements PreferredSizeWidget {
   final String currentRoute;
-  
+
   const AppBarWithDrawer({
-    super.key, 
+    super.key,
     required this.currentRoute,
   });
 
@@ -116,7 +148,12 @@ class AppBarWithDrawer extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
             iconSize: 30,
             onPressed: () {
-              NavigationService.navigateTo(AppRoutes.signin);
+              // Check if user is signed in and navigate accordingly
+              if (AuthService.isUserSignedIn()) {
+                NavigationService.navigateTo(AppRoutes.dashboard);
+              } else {
+                NavigationService.navigateTo(AppRoutes.signin);
+              }
             },
           ),
         ),

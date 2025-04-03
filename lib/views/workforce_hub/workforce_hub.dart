@@ -19,6 +19,11 @@ class _WorkforceHubScreenState extends State<WorkforceHubScreen> {
   String? _selectedLevel;
   String? _selectedAvailability;
   
+  // State variables for async loading
+  bool _isLoading = true;
+  String _errorMessage = '';
+  List<Map<String, dynamic>> _filteredFreelancers = [];
+  
   // Freelancer service instance
   final FreelancerService _freelancerService = FreelancerService();
   
@@ -27,31 +32,80 @@ class _WorkforceHubScreenState extends State<WorkforceHubScreen> {
   final List<String> _levelOptions = FreelancerFilters.levelOptions;
   final List<String> _availabilityOptions = FreelancerFilters.availabilityOptions;
   
-  // Get filtered freelancers
-  List<Map<String, dynamic>> get filteredFreelancers {
-    final allFreelancers = _freelancerService.getFreelancers();
+  @override
+  void initState() {
+    super.initState();
+    _loadFreelancers();
+  }
+  
+  // Load all freelancers
+  Future<void> _loadFreelancers() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = '';
+      });
+      
+      final allFreelancers = await _freelancerService.getFreelancers();
+      
+      if (mounted) {
+        setState(() {
+          _filteredFreelancers = allFreelancers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load freelancers: $e';
+        });
+      }
+    }
+  }
+  
+  // Apply filters to the freelancers
+  Future<void> _applyFilters() async {
+    setState(() {
+      _isLoading = true;
+    });
     
-    return allFreelancers.where((freelancer) {
-      // Filter by skill
+    try {
+      List<Map<String, dynamic>> result = [];
+      
+      // If level filter is selected, use it
+      if (_selectedLevel != null) {
+        result = await _freelancerService.getFreelancersByLevel(_selectedLevel!);
+      } else {
+        // Otherwise, get all freelancers
+        result = await _freelancerService.getFreelancers();
+      }
+      
+      // If skill filter is selected, apply it (client-side filtering since Firestore doesn't support multiple array-contains queries)
       if (_selectedSkill != null) {
-        final List<String> skills = freelancer['skills'] as List<String>;
-        if (!skills.contains(_selectedSkill)) {
-          return false;
-        }
+        result = result.where((freelancer) {
+          final skills = (freelancer['skills'] as List<dynamic>?) ?? [];
+          return skills.contains(_selectedSkill);
+        }).toList();
       }
       
-      // Filter by level
-      if (_selectedLevel != null && freelancer['level'] != _selectedLevel) {
-        return false;
+      // Apply availability filter (client-side)
+      if (_selectedAvailability != null) {
+        result = result.where((freelancer) => 
+          freelancer['availability'] == _selectedAvailability
+        ).toList();
       }
       
-      // Filter by availability
-      if (_selectedAvailability != null && freelancer['availability'] != _selectedAvailability) {
-        return false;
-      }
-      
-      return true;
-    }).toList();
+      setState(() {
+        _filteredFreelancers = result;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error applying filters: $e';
+      });
+    }
   }
 
   @override
@@ -100,21 +154,83 @@ class _WorkforceHubScreenState extends State<WorkforceHubScreen> {
   }
 
   Widget _buildResultCount() {
+    if (_isLoading) {
+      return Container(
+        margin: const EdgeInsets.only(left: 10.0),
+        child: const Text(
+          'Loading results...',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+      );
+    }
+    
+    if (_errorMessage.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(left: 10.0),
+        child: Text(
+          'Error: $_errorMessage',
+          style: const TextStyle(color: Colors.red, fontSize: 16),
+        ),
+      );
+    }
+    
     return Container(
       margin: const EdgeInsets.only(left: 10.0),
       child: Text(
-        '${filteredFreelancers.length} results',
+        '${_filteredFreelancers.length} results',
         style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
     );
   }
 
   Widget _buildFreelancerList() {
+    if (_isLoading) {
+      return const Expanded(
+        child: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+    
+    if (_errorMessage.isNotEmpty) {
+      return Expanded(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _errorMessage,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadFreelancers,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    if (_filteredFreelancers.isEmpty) {
+      return const Expanded(
+        child: Center(
+          child: Text(
+            'No freelancers found matching the filters',
+            style: TextStyle(color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: ListView.builder(
-        itemCount: filteredFreelancers.length,
+        itemCount: _filteredFreelancers.length,
         itemBuilder: (context, index) {
-          final freelancer = filteredFreelancers[index];
+          final freelancer = _filteredFreelancers[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
@@ -254,8 +370,8 @@ class _WorkforceHubScreenState extends State<WorkforceHubScreen> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        // Trigger UI refresh based on filters
-                        setState(() {});
+                        // Apply filters and refresh the UI
+                        _applyFilters();
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(

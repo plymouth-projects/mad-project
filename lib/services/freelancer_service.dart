@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class FreelancerService {
-  // Singleton pattern
+  // Singleton pattern 
   static final FreelancerService _instance = FreelancerService._internal();
   
   factory FreelancerService() {
@@ -8,70 +10,97 @@ class FreelancerService {
   
   FreelancerService._internal();
   
+  // Firestore reference
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _collection = 'freelancers';
+  
   // Get all freelancers data
-  List<Map<String, dynamic>> getFreelancers() {
-    return [
-      {
-        "image": "assets/images/plumber.png",
-        "name": "RAYAN FERNANDO",
-        "location": "No: 123, Colombo Road, Colombo 07",
-        "skills": ["Plumbing", "Electrical", "Painting"],
-        "rate": "Rs. 4000/Day",
-        "jobsCompleted": "20 Jobs Completed",
-        "availability": "Full-Time",
-        "level": "Beginner",
-      },
-      {
-        "image": "assets/images/plumber.png",
-        "name": "MALITH PERERA",
-        "location": "No: 456, Kandy Road, Sri Lanka",
-        "skills": ["Carpentry", "Welding", "Masonry"],
-        "rate": "Rs. 5000/Day",
-        "jobsCompleted": "30 Jobs Completed",
-        "availability": "Part-Time",
-        "level": "Intermediate",
-      },
-      {
-        "image": "assets/images/plumber.png",
-        "name": "ANJALI FONSEKA",
-        "location": "Galle Road, Colombo",
-        "skills": ["House Cleaning", "Gardening"],
-        "rate": "Rs. 3000/Day",
-        "jobsCompleted": "15 Jobs Completed",
-        "availability": "Full-Time",
-        "level": "Expert",
-      },
-      {
-        "image": "assets/images/plumber.png",
-        "name": "ANJALI FONSEKA",
-        "location": "Galle Road, Colombo",
-        "skills": ["House Cleaning", "Gardening"],
-        "rate": "Rs. 3000/Day",
-        "jobsCompleted": "15 Jobs Completed",
-        "availability": "Full-Time",
-        "level": "Verified",
-      },
-    ];
+  Future<List<Map<String, dynamic>>> getFreelancers() async {
+    try {
+      final QuerySnapshot snapshot = await _firestore.collection(_collection).get();
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Add document ID to the data
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error fetching freelancers: $e');
+      throw Exception('Failed to load freelancers: $e');
+    }
   }
   
-  // Get featured freelancers (could be filtered by rating or other criteria)
-  List<Map<String, dynamic>> getFeaturedFreelancers() {
-    return getFreelancers().where((freelancer) => 
-      freelancer["level"] == "Expert" || freelancer["level"] == "Verified"
-    ).toList();
+  // Get featured freelancers (all freelancers without level filtering)
+  Future<List<Map<String, dynamic>>> getFeaturedFreelancers() async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection(_collection)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error fetching featured freelancers: $e');
+      throw Exception('Failed to load featured freelancers: $e');
+    }
   }
   
   // Get freelancers by skill
-  List<Map<String, dynamic>> getFreelancersBySkill(String skill) {
-    return getFreelancers().where((freelancer) => 
-      (freelancer["skills"] as List<String>).contains(skill)
-    ).toList();
+  Future<List<Map<String, dynamic>>> getFreelancersBySkill(String skill) async {
+    try {
+      // Using array-contains to find documents where the skills array contains the specified skill
+      final QuerySnapshot snapshot = await _firestore
+          .collection(_collection)
+          .where('skills', arrayContains: skill)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error fetching freelancers by skill: $e');
+      throw Exception('Failed to load freelancers by skill: $e');
+    }
   }
   
   // Get freelancers by level
-  List<Map<String, dynamic>> getFreelancersByLevel(String level) {
-    return getFreelancers().where((freelancer) => 
-      freelancer["level"] == level
-    ).toList();
+  Future<List<Map<String, dynamic>>> getFreelancersByLevel(String level) async {
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection(_collection)
+          .where('level', isEqualTo: level)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error fetching freelancers by level: $e');
+      throw Exception('Failed to load freelancers by level: $e');
+    }
+  }
+  
+  // Get freelancer by ID
+  Future<Map<String, dynamic>?> getFreelancerById(String id) async {
+    try {
+      final DocumentSnapshot doc = await _firestore.collection(_collection).doc(id).get();
+      
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching freelancer by ID: $e');
+      throw Exception('Failed to load freelancer details: $e');
+    }
   }
 }

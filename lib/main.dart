@@ -1,11 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'config/app_colors.dart';
 import 'config/app_routes.dart';
 import 'config/navigation.dart';
 import 'views/errors/not_found.dart'; // Updated import path
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
