@@ -17,23 +17,107 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   String? _errorMessage;
-  
+
+  // Validation error messages
+  String? _emailError;
+  String? _passwordError;
+
   // Controllers for form fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+
+  // Focus nodes for managing focus changes
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+
   // Auth service instance
   final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Add listeners to focus nodes to validate on focus change
+    _emailFocus.addListener(_onEmailFocusChange);
+    _passwordFocus.addListener(_onPasswordFocusChange);
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.removeListener(_onEmailFocusChange);
+    _passwordFocus.removeListener(_onPasswordFocusChange);
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
+  }
+
+  // Validate email when focus changes
+  void _onEmailFocusChange() {
+    if (!_emailFocus.hasFocus) {
+      _validateEmail();
+    }
+  }
+
+  // Validate password when focus changes
+  void _onPasswordFocusChange() {
+    if (!_passwordFocus.hasFocus) {
+      _validatePassword();
+    }
+  }
+
+  // Validate email field
+  bool _validateEmail() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _emailError = "Email is required";
+      });
+      return false;
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      setState(() {
+        _emailError = "Please enter a valid email address";
+      });
+      return false;
+    }
+    setState(() {
+      _emailError = null;
+    });
+    return true;
+  }
+
+  // Validate password field
+  bool _validatePassword() {
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _passwordError = "Password is required";
+      });
+      return false;
+    } else if (_passwordController.text.length < 6) {
+      setState(() {
+        _passwordError = "Password must be at least 6 characters";
+      });
+      return false;
+    }
+    setState(() {
+      _passwordError = null;
+    });
+    return true;
+  }
+
+  // Validate all form fields
+  bool _validateForm() {
+    final isEmailValid = _validateEmail();
+    final isPasswordValid = _validatePassword();
+    return isEmailValid && isPasswordValid;
   }
 
   // Sign in with email and password
   Future<void> _signIn() async {
+    if (!_validateForm()) {
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -49,7 +133,6 @@ class _SignInScreenState extends State<SignInScreen> {
         // Navigate to home or dashboard
         if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
-          
         }
       } else {
         setState(() {
@@ -156,7 +239,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
-                  
+
                   // Error message if any
                   if (_errorMessage != null)
                     Container(
@@ -173,16 +256,26 @@ class _SignInScreenState extends State<SignInScreen> {
                         style: TextStyle(color: Colors.red.shade700, fontSize: 14),
                       ),
                     ),
-                  
+
                   // Form Fields
                   CustomTextField(
                     label: "Email",
                     hintText: "Enter your email address",
                     controller: _emailController,
+                    focusNode: _emailFocus,
                     keyboardType: TextInputType.emailAddress,
+                    errorText: _emailError,
+                    onChanged: (val) {
+                      // Clear error when user types
+                      if (_emailError != null) {
+                        setState(() {
+                          _emailError = null;
+                        });
+                      }
+                    },
                   ),
                   _buildPasswordField(),
-                  
+
                   // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
@@ -221,25 +314,25 @@ class _SignInScreenState extends State<SignInScreen> {
                           ),
                           disabledBackgroundColor: AppColors.primaryBlue.withOpacity(0.6),
                         ),
-                        child: _isLoading 
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "Login",
+                                style: TextStyle(fontSize: 16, color: Colors.white),
                               ),
-                            )
-                          : const Text(
-                              "Login",
-                              style: TextStyle(fontSize: 16, color: Colors.white),
-                            ),
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Divider with text
                   Row(
                     children: [
@@ -325,7 +418,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
 
                   const SizedBox(height: 10),
-                  
+
                   // Don't have an account
                   Center(
                     child: Padding(
@@ -373,7 +466,17 @@ class _SignInScreenState extends State<SignInScreen> {
       label: "Password",
       hintText: "Enter your password",
       controller: _passwordController,
+      focusNode: _passwordFocus,
       obscureText: !_isPasswordVisible,
+      errorText: _passwordError,
+      onChanged: (val) {
+        // Clear error when user types
+        if (_passwordError != null) {
+          setState(() {
+            _passwordError = null;
+          });
+        }
+      },
       suffixIcon: IconButton(
         icon: Icon(
           _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
