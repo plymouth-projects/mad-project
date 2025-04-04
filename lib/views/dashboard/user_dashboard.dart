@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mad_project/config/app_colors.dart';
+import 'package:mad_project/config/app_routes.dart';
+import 'package:mad_project/services/auth_service.dart';
+import 'package:mad_project/widgets/navbar.dart';
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({Key? key}) : super(key: key);
@@ -14,26 +18,12 @@ class _UserDashboardState extends State<UserDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).primaryColor,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // Navigate to notifications
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Navigate to profile
-            },
-          ),
-        ],
+      appBar: const AppBarWithDrawer(currentRoute: AppRoutes.dashboard),
+      drawer: const AppNavDrawer(currentRoute: AppRoutes.dashboard),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: _buildBody(),
       ),
-      body: _buildBody(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -42,6 +32,8 @@ class _UserDashboardState extends State<UserDashboard> {
             _selectedIndex = index;
           });
         },
+        selectedItemColor: AppColors.primaryBlue,
+        unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -97,12 +89,16 @@ class _UserDashboardState extends State<UserDashboard> {
           const SizedBox(height: 20),
           _buildSectionTitle('Your Gigs'),
           _buildGigsList(),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
   Widget _buildWelcomeCard() {
+    final authService = AuthService();
+    final userName = authService.currentUser?.firstName ?? 'User';
+    
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -115,20 +111,24 @@ class _UserDashboardState extends State<UserDashboard> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: Colors.grey.shade200,
-                  child: Icon(Icons.person, size: 40, color: Theme.of(context).primaryColor),
+                  backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                  child: const Icon(Icons.person, size: 40, color: AppColors.primaryBlue),
                 ),
                 const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       'Welcome back,',
                       style: TextStyle(fontSize: 16),
                     ),
                     Text(
-                      'John Doe',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      userName,
+                      style: const TextStyle(
+                        fontSize: 24, 
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryBlue,
+                      ),
                     ),
                   ],
                 ),
@@ -149,15 +149,15 @@ class _UserDashboardState extends State<UserDashboard> {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard('Applications', '12', Colors.blue),
+          child: _buildStatCard('Applications', '12', AppColors.primaryBlue),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildStatCard('Posted Jobs', '5', Colors.orange),
+          child: _buildStatCard('Posted Jobs', '5', AppColors.tealDark),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: _buildStatCard('Active Gigs', '3', Colors.green),
+          child: _buildStatCard('Active Gigs', '3', AppColors.navyBlue),
         ),
       ],
     );
@@ -234,7 +234,11 @@ class _UserDashboardState extends State<UserDashboard> {
 
   Widget _buildApplicationStatus(int index) {
     List<String> statuses = ['Pending', 'Reviewing', 'Accepted'];
-    List<Color> colors = [Colors.orange, Colors.blue, Colors.green];
+    List<Color> colors = [
+      Colors.orange, // Instead of AppColors.warningColor
+      AppColors.primaryBlue, 
+      Colors.green, // Instead of AppColors.successColor
+    ];
     
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -291,14 +295,13 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  // Jobs section
   Widget _buildJobsContent() {
     return DefaultTabController(
       length: 2,
       child: Column(
         children: [
           TabBar(
-            labelColor: Theme.of(context).primaryColor,
+            labelColor: AppColors.primaryBlue,
             tabs: const [
               Tab(text: 'Find Jobs'),
               Tab(text: 'Post a Job'),
@@ -325,9 +328,14 @@ class _UserDashboardState extends State<UserDashboard> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search for jobs',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, color: AppColors.primaryBlue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
@@ -347,17 +355,18 @@ class _UserDashboardState extends State<UserDashboard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             'Mobile Developer',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
+                              color: AppColors.primaryBlue,
                             ),
                           ),
                           Text(
                             '\$25-35/hr',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
+                            style: const TextStyle(
+                              color: AppColors.tealDark,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -381,12 +390,14 @@ class _UserDashboardState extends State<UserDashboard> {
                         children: [
                           Chip(
                             label: const Text('Flutter'),
-                            backgroundColor: Colors.blue.shade100,
+                            backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                            labelStyle: const TextStyle(color: AppColors.primaryBlue),
                           ),
                           const SizedBox(width: 8),
                           Chip(
                             label: const Text('Remote'),
-                            backgroundColor: Colors.green.shade100,
+                            backgroundColor: AppColors.tealDark.withOpacity(0.1),
+                            labelStyle: const TextStyle(color: AppColors.tealDark),
                           ),
                         ],
                       ),
@@ -402,7 +413,13 @@ class _UserDashboardState extends State<UserDashboard> {
                             onPressed: () {
                               // Apply for job
                             },
-                            child: const Text('Apply'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryBlue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Apply', style: TextStyle(color: Colors.white)),
                           ),
                         ],
                       ),
@@ -495,9 +512,15 @@ class _UserDashboardState extends State<UserDashboard> {
               onPressed: () {
                 // Post the job
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               child: const Text(
                 'Post Job',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ),
@@ -506,14 +529,13 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  // Gigs section
   Widget _buildGigsContent() {
     return DefaultTabController(
       length: 2,
       child: Column(
         children: [
           TabBar(
-            labelColor: Theme.of(context).primaryColor,
+            labelColor: AppColors.primaryBlue,
             tabs: const [
               Tab(text: 'Browse Gigs'),
               Tab(text: 'Post a Gig'),
@@ -540,9 +562,14 @@ class _UserDashboardState extends State<UserDashboard> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search for gigs',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, color: AppColors.primaryBlue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
@@ -623,7 +650,7 @@ class _UserDashboardState extends State<UserDashboard> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
+                              color: AppColors.primaryBlue,
                             ),
                           ),
                         ],
@@ -750,9 +777,15 @@ class _UserDashboardState extends State<UserDashboard> {
               onPressed: () {
                 // Post the gig
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               child: const Text(
                 'Post Gig',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ),
@@ -761,7 +794,6 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  // Hire section
   Widget _buildHireContent() {
     return Column(
       children: [
@@ -770,13 +802,18 @@ class _UserDashboardState extends State<UserDashboard> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search for professionals',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, color: AppColors.primaryBlue),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.filter_list),
+                icon: const Icon(Icons.filter_list, color: AppColors.primaryBlue),
                 onPressed: () {
                   // Show filters
                 },
@@ -844,20 +881,20 @@ class _UserDashboardState extends State<UserDashboard> {
                                 Chip(
                                   label: const Text('Flutter'),
                                   visualDensity: VisualDensity.compact,
-                                  backgroundColor: Colors.blue.shade100,
-                                  labelStyle: TextStyle(fontSize: 12),
+                                  backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                                  labelStyle: const TextStyle(color: AppColors.primaryBlue),
                                 ),
                                 Chip(
                                   label: const Text('Mobile'),
                                   visualDensity: VisualDensity.compact,
-                                  backgroundColor: Colors.green.shade100,
-                                  labelStyle: TextStyle(fontSize: 12),
+                                  backgroundColor: AppColors.tealDark.withOpacity(0.1),
+                                  labelStyle: const TextStyle(color: AppColors.tealDark),
                                 ),
                                 Chip(
                                   label: const Text('UI/UX'),
                                   visualDensity: VisualDensity.compact,
-                                  backgroundColor: Colors.orange.shade100,
-                                  labelStyle: TextStyle(fontSize: 12),
+                                  backgroundColor: AppColors.navyBlue.withOpacity(0.1),
+                                  labelStyle: const TextStyle(color: AppColors.navyBlue),
                                 ),
                               ],
                             ),
@@ -869,14 +906,26 @@ class _UserDashboardState extends State<UserDashboard> {
                                   onPressed: () {
                                     // View profile
                                   },
-                                  child: const Text('View Profile'),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: AppColors.primaryBlue),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('View Profile', style: TextStyle(color: AppColors.primaryBlue)),
                                 ),
                                 const SizedBox(width: 8),
                                 ElevatedButton(
                                   onPressed: () {
                                     // Contact
                                   },
-                                  child: const Text('Contact'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryBlue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text('Contact', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             ),
@@ -905,6 +954,7 @@ class _UserDashboardState extends State<UserDashboard> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: AppColors.primaryBlue,
             ),
           ),
           const SizedBox(height: 8),
@@ -912,8 +962,14 @@ class _UserDashboardState extends State<UserDashboard> {
             maxLines: maxLines,
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey.shade400),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.primaryBlue),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
@@ -930,6 +986,10 @@ class _UserDashboardState extends State<UserDashboard> {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
+      selectedColor: AppColors.primaryBlue.withOpacity(0.2),
+      labelStyle: TextStyle(
+        color: selected ? AppColors.primaryBlue : Colors.grey.shade700,
+      ),
       onSelected: (bool selected) {
         // Handle selection
       },

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/list_utils.dart';
 
 class FreelancerService {
   // Singleton pattern 
@@ -21,6 +22,15 @@ class FreelancerService {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id; // Add document ID to the data
+        
+        // Process any list fields to ensure proper type safety
+        if (data.containsKey('skills') && data['skills'] is List) {
+          data['skills'] = ListUtils.toStringList(data['skills']);
+        }
+        
+        // Process other lists as needed
+        // Add similar conversions for other list fields
+        
         return data;
       }).toList();
     } catch (e) {
@@ -29,7 +39,7 @@ class FreelancerService {
     }
   }
   
-  // Get featured freelancers (all freelancers without level filtering)
+  // Get featured freelancers
   Future<List<Map<String, dynamic>>> getFeaturedFreelancers() async {
     try {
       final QuerySnapshot snapshot = await _firestore
@@ -39,6 +49,17 @@ class FreelancerService {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;
+        
+        // Process any list fields to ensure proper type safety
+        if (data.containsKey('skills') && data['skills'] is List) {
+          data['skills'] = ListUtils.toStringList(data['skills']);
+        }
+        
+        // Process other lists that might be present
+        if (data.containsKey('languages') && data['languages'] is List) {
+          data['languages'] = ListUtils.toStringList(data['languages']);
+        }
+        
         return data;
       }).toList();
     } catch (e) {
@@ -78,6 +99,16 @@ class FreelancerService {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;
+        
+        // Process any list fields to ensure proper type safety
+        if (data.containsKey('skills') && data['skills'] is List) {
+          data['skills'] = ListUtils.toStringList(data['skills']);
+        }
+        
+        if (data.containsKey('languages') && data['languages'] is List) {
+          data['languages'] = ListUtils.toStringList(data['languages']);
+        }
+        
         return data;
       }).toList();
     } catch (e) {
