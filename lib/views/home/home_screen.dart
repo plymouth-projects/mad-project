@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_routes.dart';
 import '../../widgets/home/hero_section.dart';
-import '../../widgets/top_services.dart';
+import '../../widgets/home/top_services.dart';
 import '../../widgets/home/category_section.dart';
 import '../../widgets/home/job_opportunities.dart';
 import '../../widgets/home/freelancers_section.dart';
@@ -9,7 +9,6 @@ import '../../widgets/home/contact_us.dart';
 import '../../widgets/navbar.dart';
 import '../../widgets/home/business_section.dart';
 import '../../widgets/home/footer.dart';
-
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,10 +24,11 @@ class HomeScreen extends StatelessWidget {
             const HeroSection(),
             const TopServices(),
             const CategorySection(),
-            const JobCarousel(jobs: []), // Pass an empty list or fetch actual job data
+            const JobCarousel(
+                jobs: []), // Pass an empty list or fetch actual job data
             const FreelancerCarousel(),
             const CompaniesSection(),
-            const ContactUs(), 
+            const ContactUs(),
             const Footer(),
           ],
         ),
