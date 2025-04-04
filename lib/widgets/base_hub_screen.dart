@@ -3,7 +3,7 @@ import 'package:mad_project/widgets/hub_layout.dart';
 import 'package:mad_project/widgets/filter_bottom_sheet.dart';
 
 abstract class BaseHubScreen<T> extends StatefulWidget {
-  const BaseHubScreen({Key? key}) : super(key: key);
+  const BaseHubScreen({super.key});
 }
 
 abstract class BaseHubScreenState<T extends BaseHubScreen, D> extends State<T> {

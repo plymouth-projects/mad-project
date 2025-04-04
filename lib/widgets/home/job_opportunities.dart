@@ -4,9 +4,9 @@ class JobCarousel extends StatefulWidget {
   final List<Map<String, dynamic>> jobs;
 
   const JobCarousel({
-    Key? key,
+    super.key,
     required this.jobs,
-  }) : super(key: key);
+  });
 
   @override
   State<JobCarousel> createState() => _JobCarouselState();

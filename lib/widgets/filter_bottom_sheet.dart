@@ -24,12 +24,12 @@ class FilterBottomSheet extends StatefulWidget {
   final VoidCallback onReset;
   
   const FilterBottomSheet({
-    Key? key,
+    super.key,
     required this.title,
     required this.filterOptions,
     required this.onApply,
     required this.onReset,
-  }) : super(key: key);
+  });
 
   @override
   State<FilterBottomSheet> createState() => _FilterBottomSheetState();
@@ -104,7 +104,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               _buildFilterCategory(option),
               const SizedBox(height: 12),
             ],
-          )).toList(),
+          )),
           _buildActionButtons(),
         ],
       ),
