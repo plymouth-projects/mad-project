@@ -13,7 +13,7 @@ class HubLayout extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const HubLayout({
-    Key? key,
+    super.key,
     required this.title,
     required this.currentRoute,
     required this.resultCount,
@@ -22,7 +22,7 @@ class HubLayout extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ import 'package:mad_project/services/auth_service.dart';
 import 'package:mad_project/widgets/navbar.dart';
 
 class UserDashboard extends StatefulWidget {
-  const UserDashboard({Key? key}) : super(key: key);
+  const UserDashboard({super.key});
 
   @override
   State<UserDashboard> createState() => _UserDashboardState();
