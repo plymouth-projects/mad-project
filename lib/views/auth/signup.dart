@@ -26,6 +26,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   
+  // Focus nodes for form fields
+  final FocusNode _firstNameFocus = FocusNode();
+  final FocusNode _lastNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _confirmPasswordFocus = FocusNode();
+  final FocusNode _dateFocus = FocusNode();
+  
+  // Auto validation mode
+  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+  
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _selectedGender;
@@ -38,6 +49,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void initState() {
     super.initState();
     _updateDateController();
+    _setupFocusListeners();
+  }
+
+  void _setupFocusListeners() {
+    void _onFocusChange() {
+      if (!_formKey.currentState!.validate()) {
+        if (_autoValidateMode == AutovalidateMode.disabled) {
+          setState(() {
+            _autoValidateMode = AutovalidateMode.onUserInteraction;
+          });
+        }
+      }
+    }
+
+    _firstNameFocus.addListener(() {
+      if (!_firstNameFocus.hasFocus) _onFocusChange();
+    });
+    
+    _lastNameFocus.addListener(() {
+      if (!_lastNameFocus.hasFocus) _onFocusChange();
+    });
+    
+    _emailFocus.addListener(() {
+      if (!_emailFocus.hasFocus) _onFocusChange();
+    });
+    
+    _passwordFocus.addListener(() {
+      if (!_passwordFocus.hasFocus) _onFocusChange();
+    });
+    
+    _confirmPasswordFocus.addListener(() {
+      if (!_confirmPasswordFocus.hasFocus) _onFocusChange();
+    });
+    
+    _dateFocus.addListener(() {
+      if (!_dateFocus.hasFocus) _onFocusChange();
+    });
   }
 
   void _updateDateController() {
@@ -56,13 +104,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _dateController.dispose();
+    
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmPasswordFocus.dispose();
+    _dateFocus.dispose();
+    
     super.dispose();
   }
 
   // Validate and submit form
   Future<void> _submitForm() async {
+    setState(() {
+      _autoValidateMode = AutovalidateMode.always;
+    });
+    
     if (_formKey.currentState!.validate()) {
-      // Check if passwords match
       if (_passwordController.text != _confirmPasswordController.text) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Passwords do not match')),
@@ -70,7 +129,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
       
-      // Check if date of birth is selected
       if (_selectedDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select your date of birth')),
@@ -78,7 +136,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
       
-      // Check if gender is selected
       if (_selectedGender == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select your gender')),
@@ -105,7 +162,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SnackBar(content: Text('Registration successful!')),
           );
           
-          // Navigate to sign in page after successful registration
           Navigator.pushNamed(context, AppRoutes.signin);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -124,7 +180,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // Method to handle Google Sign In
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isLoading = true;
@@ -134,7 +189,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final success = await _authService.signInWithGoogle();
       
       if (success) {
-        // Get current user details for verification
         final user = _authService.currentUser;
         
         if (user != null) {
@@ -142,7 +196,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             SnackBar(content: Text('Signed in successfully as ${user.email}')),
           );
           
-          // Navigate to home page or dashboard
           Navigator.pushReplacementNamed(context, AppRoutes.home);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +208,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     } catch (e) {
-      // Show detailed error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error with Google sign-in: ${e.toString()}')),
       );
@@ -167,38 +219,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     }
   }
-  
-  // Method to handle Microsoft Sign In
-  /* Future<void> _handleMicrosoftSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      /* final success = await _authService.signInWithMicrosoft(); */
-      
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microsoft sign-in successful!')),
-        );
-        
-        // Navigate to home page or dashboard
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microsoft sign-in was cancelled or failed.')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error with Microsoft sign-in: ${e.toString()}')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  } */
 
   @override
   Widget build(BuildContext context) {
@@ -226,14 +246,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               width: 400,
               child: Form(
                 key: _formKey,
+                autovalidateMode: _autoValidateMode,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Left side column with logo and text
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -255,7 +274,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                           ],
                         ),
-                        // Right side image
                         Image.asset(
                           "assets/images/auth_vector.png",
                           height: 100,
@@ -264,7 +282,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 20),
                     
-                    // Form Fields
                     CustomTextField(
                       label: "First Name",
                       controller: _firstNameController,
@@ -275,6 +292,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return null;
                       },
                     ),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_firstNameFocus),
+                      child: Focus(
+                        focusNode: _firstNameFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
+                    
                     CustomTextField(
                       label: "Last Name",
                       controller: _lastNameController,
@@ -285,6 +310,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return null;
                       },
                     ),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_lastNameFocus),
+                      child: Focus(
+                        focusNode: _lastNameFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
+                    
                     CustomDropdown(
                       label: "Gender",
                       hintText: "Select your gender",
@@ -296,6 +329,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         });
                       },
                     ),
+                    
                     CustomDatePicker(
                       label: "Date of Birth",
                       hintText: "Select your date of birth",
@@ -303,6 +337,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       controller: _dateController,
                       onTap: (_) => _selectDate(context),
                     ),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_dateFocus),
+                      child: Focus(
+                        focusNode: _dateFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
+                    
                     CustomTextField(
                       label: "Email",
                       controller: _emailController,
@@ -316,12 +358,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return null;
                       },
                     ),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_emailFocus),
+                      child: Focus(
+                        focusNode: _emailFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
+                    
                     _buildPasswordField("Password", isConfirm: false),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_passwordFocus),
+                      child: Focus(
+                        focusNode: _passwordFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
+                    
                     _buildPasswordField("Confirm Password", isConfirm: true),
+                    Listener(
+                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_confirmPasswordFocus),
+                      child: Focus(
+                        focusNode: _confirmPasswordFocus,
+                        child: Container(width: 0, height: 0),
+                      ),
+                    ),
 
                     const SizedBox(height: 20),
 
-                    // Register Button
                     Center(
                       child: SizedBox(
                         width: double.infinity,
@@ -353,7 +417,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     const SizedBox(height: 20),
                     
-                    // Divider with text
                     Row(
                       children: [
                         Expanded(
@@ -387,7 +450,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Social Login
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -399,7 +461,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                     const SizedBox(height: 10),
 
-                    // Already have an account
                     Center(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 15, bottom: 10),
@@ -441,7 +502,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // Date Picker Function
   Future<void> _selectDate(BuildContext context) async {
     final DateTime now = DateTime.now();
     final DateTime initialDate = _selectedDate ?? DateTime(now.year - 18, now.month, now.day);
@@ -463,7 +523,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // Password Field Widget
   Widget _buildPasswordField(String label, {required bool isConfirm}) {
     return CustomTextField(
       label: label,
@@ -476,6 +535,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
         if (!isConfirm && value.length < 6) {
           return 'Password must be at least 6 characters';
+        }
+        if (isConfirm && value != _passwordController.text) {
+          return 'Passwords do not match';
         }
         return null;
       },
@@ -500,7 +562,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // Social Button Widget
   Widget _buildSocialButton(String assetPath, String label) {
     return InkWell(
       onTap: _isLoading 
@@ -509,7 +570,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             if (label == "Google") {
               _handleGoogleSignIn();
             } else if (label == "Microsoft") {
-              // Microsoft sign-in is commented out for now
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Microsoft sign-in is not configured yet')),
               );
