@@ -49,6 +49,7 @@ class _SignInScreenState extends State<SignInScreen> {
         // Navigate to home or dashboard
         if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
+          
         }
       } else {
         setState(() {
