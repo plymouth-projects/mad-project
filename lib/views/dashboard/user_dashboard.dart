@@ -137,7 +137,7 @@ class _UserDashboardState extends State<UserDashboard> {
             const SizedBox(height: 16),
             Text(
               'What would you like to do today?',
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 16, color: AppColors.primaryBlue[300]),
             ),
           ],
         ),
@@ -184,7 +184,7 @@ class _UserDashboardState extends State<UserDashboard> {
               title,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: AppColors.primaryBlue[300],
               ),
               textAlign: TextAlign.center,
             ),
@@ -217,7 +217,7 @@ class _UserDashboardState extends State<UserDashboard> {
           margin: const EdgeInsets.only(bottom: 8.0),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: Colors.grey.shade200,
+              backgroundColor: AppColors.primaryBlue[50],
               child: const Icon(Icons.work),
             ),
             title: Text('Software Developer ${index + 1}'),
@@ -377,13 +377,13 @@ class _UserDashboardState extends State<UserDashboard> {
                         'ABC Company',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey.shade700,
+                          color: AppColors.primaryBlue[300],
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Looking for an experienced mobile developer with Flutter experience for a 6-month project.',
-                        style: TextStyle(color: Colors.grey.shade600),
+                        style: TextStyle(color: AppColors.primaryBlue[300]),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -407,7 +407,7 @@ class _UserDashboardState extends State<UserDashboard> {
                         children: [
                           Text(
                             'Posted 2 days ago',
-                            style: TextStyle(color: Colors.grey.shade500),
+                            style: TextStyle(color: AppColors.primaryBlue[300]),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -450,7 +450,9 @@ class _UserDashboardState extends State<UserDashboard> {
           const SizedBox(height: 16),
           _buildTextField('Job Title', 'e.g. Mobile Developer'),
           _buildTextField('Company Name', 'Your company name'),
-          _buildTextField('Job Description', 'Describe the job and requirements', maxLines: 5),
+          _buildTextField(
+              'Job Description', 'Describe the job and requirements',
+              maxLines: 5),
           Row(
             children: [
               Expanded(
@@ -596,11 +598,11 @@ class _UserDashboardState extends State<UserDashboard> {
                   children: [
                     Container(
                       height: 100,
-                      color: Colors.primaries[index % Colors.primaries.length],
+                      color: AppColors.primaryBlue,
                       child: Center(
                         child: Icon(
                           Icons.handyman,
-                          color: Colors.white,
+                          color: AppColors.white,
                           size: 40,
                         ),
                       ),
@@ -624,7 +626,7 @@ class _UserDashboardState extends State<UserDashboard> {
                             children: [
                               CircleAvatar(
                                 radius: 10,
-                                backgroundColor: Colors.grey.shade200,
+                                backgroundColor: AppColors.primaryBlue[50],
                                 child: Icon(Icons.person, size: 16),
                               ),
                               SizedBox(width: 4),
@@ -632,7 +634,7 @@ class _UserDashboardState extends State<UserDashboard> {
                                 'John Doe',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade700,
+                                  color: AppColors.primaryBlue[300],
                                 ),
                               ),
                             ],
@@ -642,7 +644,7 @@ class _UserDashboardState extends State<UserDashboard> {
                             'Starting at',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade600,
+                              color: AppColors.primaryBlue[300],
                             ),
                           ),
                           Text(
@@ -681,8 +683,8 @@ class _UserDashboardState extends State<UserDashboard> {
           ),
           const SizedBox(height: 16),
           _buildTextField('Gig Title', 'e.g. I will design your mobile app UI'),
-          _buildTextField('Description', 'Describe your services in detail', maxLines: 5),
-          
+          _buildTextField('Description', 'Describe your services in detail',
+              maxLines: 5),
           const SizedBox(height: 16),
           const Text(
             'Upload Images (Max 5)',
@@ -695,7 +697,7 @@ class _UserDashboardState extends State<UserDashboard> {
           Container(
             height: 120,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColors.primaryBlue),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -705,18 +707,17 @@ class _UserDashboardState extends State<UserDashboard> {
                   Icon(
                     Icons.cloud_upload,
                     size: 40,
-                    color: Colors.grey.shade400,
+                    color: AppColors.primaryBlue[300],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Tap to upload images',
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: TextStyle(color: AppColors.primaryBlue[300]),
                   ),
                 ],
               ),
             ),
           ),
-          
           const SizedBox(height: 16),
           const Text(
             'Pricing',
@@ -726,7 +727,6 @@ class _UserDashboardState extends State<UserDashboard> {
             ),
           ),
           _buildTextField('Starting Price (\$)', 'e.g. 50'),
-          
           const SizedBox(height: 16),
           const Text(
             'Category',
@@ -738,15 +738,20 @@ class _UserDashboardState extends State<UserDashboard> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColors.primaryBlue),
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 isExpanded: true,
                 hint: const Text('Select a category'),
-                items: ['Design', 'Development', 'Writing', 'Marketing', 'Other']
-                    .map((String value) {
+                items: [
+                  'Design',
+                  'Development',
+                  'Writing',
+                  'Marketing',
+                  'Other'
+                ].map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value),
@@ -758,7 +763,6 @@ class _UserDashboardState extends State<UserDashboard> {
               ),
             ),
           ),
-          
           const SizedBox(height: 16),
           const Text(
             'Skills',
@@ -768,7 +772,6 @@ class _UserDashboardState extends State<UserDashboard> {
             ),
           ),
           _buildTextField('Add skills', 'e.g. UI Design, UX, Adobe XD'),
-          
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -834,11 +837,11 @@ class _UserDashboardState extends State<UserDashboard> {
                     children: [
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.primaries[index % Colors.primaries.length],
+                        backgroundColor: AppColors.primaryBlue,
                         child: Text(
                           'JD',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -860,16 +863,19 @@ class _UserDashboardState extends State<UserDashboard> {
                               'Mobile App Developer',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade700,
+                                color: AppColors.primaryBlue[300],
                               ),
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(Icons.star, size: 16, color: Colors.amber),
+                                Icon(Icons.star,
+                                    size: 16, color: AppColors.accentBlue),
                                 Text(' 4.8 (56 reviews)'),
                                 const SizedBox(width: 16),
-                                Icon(Icons.location_on, size: 16, color: Colors.grey),
+                                Icon(Icons.location_on,
+                                    size: 16,
+                                    color: AppColors.primaryBlue[300]),
                                 Text(' Remote'),
                               ],
                             ),
