@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
             const HeroSection(),
             const TopServices(),
             const CategorySection(),
-            const JobCarousel(),
+            const JobCarousel(jobs: []), // Pass an empty list or fetch actual job data
             const FreelancerCarousel(),
             const CompaniesSection(),
             const ContactUs(), 

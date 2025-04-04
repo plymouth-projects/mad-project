@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mad_project/config/app_colors.dart';
 
 class JobCard extends StatelessWidget {
-  final Map<String, String> job;
+  final Map<String, dynamic> job;
   final double scale;
   final Function calculateDaysLeft;
   final VoidCallback? onApplyPressed;
