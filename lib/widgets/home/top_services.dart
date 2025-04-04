@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mad_project/widgets/carousel_indicator.dart';
 import 'dart:async';
-import '../config/app_colors.dart';
+import '../../config/app_colors.dart';
 
 class TopServices extends StatefulWidget {
   const TopServices({super.key});
@@ -14,48 +14,52 @@ class _TopServicesState extends State<TopServices> {
   late PageController _pageController;
   int currentPage = 0;
   late Timer _autoplayTimer;
-  
+
   final List<Map<String, String>> services = [
     {
       'image': 'assets/images/job_posting.png',
       'title': 'Post a Job',
-      'description': 'Quickly create and share job postings to find the right workers with ease. Post listings, connect with qualified candidates, and hire the perfect fit—all in just a few clicks!',
+      'description':
+          'Quickly create and share job postings to find the right workers with ease. Post listings, connect with qualified candidates, and hire the perfect fit—all in just a few clicks!',
     },
     {
       'image': 'assets/images/hire_worker.png',
       'title': 'Hire Worker',
-      'description': 'Find the perfect worker for your project from a list of verified professionals. Secure payments ensure transparency and trust, making hiring seamless and worry-free through our platform.',
+      'description':
+          'Find the perfect worker for your project from a list of verified professionals. Secure payments ensure transparency and trust, making hiring seamless and worry-free through our platform.',
     },
     {
       'image': 'assets/images/apply_job.png',
       'title': 'Apply for Jobs',
-      'description': 'Discover jobs tailored to your skills, location, and preferences. Explore listings, apply with confidence, and land opportunities that align with your schedule—making job hunting easier and more rewarding!',
+      'description':
+          'Discover jobs tailored to your skills, location, and preferences. Explore listings, apply with confidence, and land opportunities that align with your schedule—making job hunting easier and more rewarding!',
     },
     {
       'image': 'assets/images/post_proficiency.png',
       'title': 'Post Your Proficiency',
-      'description': 'Highlight your expertise and stand out to potential employers! Create a compelling profile showcasing your skills, experience, and achievements, increasing your chances of getting hired for the perfect opportunity.',
+      'description':
+          'Highlight your expertise and stand out to potential employers! Create a compelling profile showcasing your skills, experience, and achievements, increasing your chances of getting hired for the perfect opportunity.',
     },
   ];
 
   @override
   void initState() {
     super.initState();
-    
+
     _pageController = PageController(
       initialPage: 1000,
       viewportFraction: 0.95,
     );
-    
+
     _pageController.addListener(() {
       setState(() {
         currentPage = _pageController.page!.round() % services.length;
       });
     });
-    
+
     _startAutoplay();
   }
-  
+
   void _startAutoplay() {
     _autoplayTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_pageController.hasClients) {
@@ -67,7 +71,7 @@ class _TopServicesState extends State<TopServices> {
       }
     });
   }
-  
+
   void _stopAutoplay() {
     if (_autoplayTimer.isActive) {
       _autoplayTimer.cancel();
@@ -126,10 +130,7 @@ class _TopServicesState extends State<TopServices> {
           ),
         ),
         const SizedBox(height: 15),
-        CarouselIndicator(
-          itemCount: services.length, 
-          currentPage: currentPage
-        )
+        CarouselIndicator(itemCount: services.length, currentPage: currentPage)
       ],
     );
   }
@@ -153,7 +154,8 @@ class _TopServicesState extends State<TopServices> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top:16.0, bottom: 12.0, left: 16.0, right: 16.0),
+              padding: const EdgeInsets.only(
+                  top: 16.0, bottom: 12.0, left: 16.0, right: 16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min, // Add this
                 crossAxisAlignment: CrossAxisAlignment.start,
