@@ -22,7 +22,6 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   
-  // Auth service instance
   final AuthService _authService = AuthService();
 
   @override
@@ -32,7 +31,6 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  // Sign in with email and password
   Future<void> _signIn() async {
     setState(() {
       _isLoading = true;
@@ -76,7 +74,6 @@ class _SignInScreenState extends State<SignInScreen> {
       final success = await _authService.signInWithGoogle();
 
       if (success) {
-        // Navigate to home or dashboard
         if (mounted) {
           Navigator.pushReplacementNamed(context, AppRoutes.home);
         }
@@ -108,7 +105,7 @@ class _SignInScreenState extends State<SignInScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.08),
@@ -367,7 +364,6 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  // Password Field Widget
   Widget _buildPasswordField() {
     return CustomTextField(
       label: "Password",
