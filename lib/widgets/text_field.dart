@@ -10,6 +10,9 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final EdgeInsetsGeometry? padding;
   final TextInputType? keyboardType;
+  final FocusNode? focusNode;
+  final String? errorText;
+  final Function(String)? onChanged;
 
   const CustomTextField({
     super.key,
@@ -21,6 +24,9 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.padding = const EdgeInsets.only(bottom: 15),
     this.keyboardType,
+    this.focusNode,
+    this.errorText,
+    this.onChanged,
   });
 
   @override
@@ -35,6 +41,8 @@ class CustomTextField extends StatelessWidget {
             validator: validator,
             obscureText: obscureText,
             keyboardType: keyboardType,
+            focusNode: focusNode,
+            onChanged: onChanged,
             style: TextStyle(
               fontSize: 14,
               color: AppColors.navyBlue,
@@ -65,6 +73,19 @@ class CustomTextField extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               suffixIcon: suffixIcon,
+              errorText: errorText,
+              errorStyle: TextStyle(
+                color: Colors.red[700],
+                fontSize: 12,
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red[500]!, width: 1.5),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ],
