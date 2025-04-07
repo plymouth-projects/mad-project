@@ -15,7 +15,6 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
   
   // Text controllers
@@ -32,10 +31,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
   final FocusNode _confirmPasswordFocus = FocusNode();
-  final FocusNode _dateFocus = FocusNode();
   
-  // Auto validation mode
-  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
+  // Field-specific error messages
+  String? _firstNameError;
+  String? _lastNameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+  String? _dateError;
+  String? _genderError;
   
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -53,38 +57,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _setupFocusListeners() {
-    void _onFocusChange() {
-      if (!_formKey.currentState!.validate()) {
-        if (_autoValidateMode == AutovalidateMode.disabled) {
-          setState(() {
-            _autoValidateMode = AutovalidateMode.onUserInteraction;
-          });
-        }
-      }
-    }
-
     _firstNameFocus.addListener(() {
-      if (!_firstNameFocus.hasFocus) _onFocusChange();
+      if (!_firstNameFocus.hasFocus) {
+        _validateFirstName();
+      }
     });
     
     _lastNameFocus.addListener(() {
-      if (!_lastNameFocus.hasFocus) _onFocusChange();
+      if (!_lastNameFocus.hasFocus) {
+        _validateLastName();
+      }
     });
     
     _emailFocus.addListener(() {
-      if (!_emailFocus.hasFocus) _onFocusChange();
+      if (!_emailFocus.hasFocus) {
+        _validateEmail();
+      }
     });
     
     _passwordFocus.addListener(() {
-      if (!_passwordFocus.hasFocus) _onFocusChange();
+      if (!_passwordFocus.hasFocus) {
+        _validatePassword();
+      }
     });
     
     _confirmPasswordFocus.addListener(() {
-      if (!_confirmPasswordFocus.hasFocus) _onFocusChange();
-    });
-    
-    _dateFocus.addListener(() {
-      if (!_dateFocus.hasFocus) _onFocusChange();
+      if (!_confirmPasswordFocus.hasFocus) {
+        _validateConfirmPassword();
+      }
     });
   }
 
@@ -110,73 +110,176 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailFocus.dispose();
     _passwordFocus.dispose();
     _confirmPasswordFocus.dispose();
-    _dateFocus.dispose();
     
     super.dispose();
   }
 
+  // Validation methods
+  bool _validateFirstName() {
+    if (_firstNameController.text.trim().isEmpty) {
+      setState(() {
+        _firstNameError = 'Please enter your first name';
+      });
+      return false;
+    }
+    setState(() {
+      _firstNameError = null;
+    });
+    return true;
+  }
+
+  bool _validateLastName() {
+    if (_lastNameController.text.trim().isEmpty) {
+      setState(() {
+        _lastNameError = 'Please enter your last name';
+      });
+      return false;
+    }
+    setState(() {
+      _lastNameError = null;
+    });
+    return true;
+  }
+
+  bool _validateEmail() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() {
+        _emailError = 'Please enter your email';
+      });
+      return false;
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      setState(() {
+        _emailError = 'Please enter a valid email';
+      });
+      return false;
+    }
+    setState(() {
+      _emailError = null;
+    });
+    return true;
+  }
+
+  bool _validatePassword() {
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _passwordError = 'Please enter a password';
+      });
+      return false;
+    } else if (_passwordController.text.length < 6) {
+      setState(() {
+        _passwordError = 'Password must be at least 6 characters';
+      });
+      return false;
+    }
+    setState(() {
+      _passwordError = null;
+    });
+    return true;
+  }
+
+  bool _validateConfirmPassword() {
+    if (_confirmPasswordController.text.isEmpty) {
+      setState(() {
+        _confirmPasswordError = 'Please confirm your password';
+      });
+      return false;
+    } else if (_confirmPasswordController.text != _passwordController.text) {
+      setState(() {
+        _confirmPasswordError = 'Passwords do not match';
+      });
+      return false;
+    }
+    setState(() {
+      _confirmPasswordError = null;
+    });
+    return true;
+  }
+
+  bool _validateDate() {
+    if (_selectedDate == null) {
+      setState(() {
+        _dateError = 'Please select your date of birth';
+      });
+      return false;
+    }
+    setState(() {
+      _dateError = null;
+    });
+    return true;
+  }
+
+  bool _validateGender() {
+    if (_selectedGender == null) {
+      setState(() {
+        _genderError = 'Please select your gender';
+      });
+      return false;
+    }
+    setState(() {
+      _genderError = null;
+    });
+    return true;
+  }
+
+  // Validate all form fields
+  bool _validateForm() {
+    final isFirstNameValid = _validateFirstName();
+    final isLastNameValid = _validateLastName();
+    final isEmailValid = _validateEmail();
+    final isPasswordValid = _validatePassword();
+    final isConfirmPasswordValid = _validateConfirmPassword();
+    final isDateValid = _validateDate();
+    final isGenderValid = _validateGender();
+    
+    return isFirstNameValid && 
+           isLastNameValid && 
+           isEmailValid && 
+           isPasswordValid && 
+           isConfirmPasswordValid && 
+           isDateValid && 
+           isGenderValid;
+  }
+
   // Validate and submit form
   Future<void> _submitForm() async {
+    if (!_validateForm()) {
+      return;
+    }
+    
     setState(() {
-      _autoValidateMode = AutovalidateMode.always;
+      _isLoading = true;
     });
     
-    if (_formKey.currentState!.validate()) {
-      if (_passwordController.text != _confirmPasswordController.text) {
+    try {
+      final success = await _authService.registerUser(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        gender: _selectedGender!,
+        dateOfBirth: _selectedDate!,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Passwords do not match')),
-        );
-        return;
-      }
-      
-      if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select your date of birth')),
-        );
-        return;
-      }
-      
-      if (_selectedGender == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select your gender')),
-        );
-        return;
-      }
-      
-      setState(() {
-        _isLoading = true;
-      });
-      
-      try {
-        final success = await _authService.registerUser(
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          gender: _selectedGender!,
-          dateOfBirth: _selectedDate!,
-          email: _emailController.text,
-          password: _passwordController.text,
+          const SnackBar(content: Text('Registration successful!')),
         );
         
-        if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration successful!')),
-          );
-          
-          Navigator.pushNamed(context, AppRoutes.signin);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration failed. Email may already be in use.')),
-          );
-        }
-      } catch (e) {
+        Navigator.pushNamed(context, AppRoutes.signin);
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          const SnackBar(content: Text('Registration failed. Email may already be in use.')),
         );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -244,256 +347,259 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ],
               ),
               width: 400,
-              child: Form(
-                key: _formKey,
-                autovalidateMode: _autoValidateMode,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SvgPicture.asset(
-                              "assets/images/findworkd.svg",
-                              height: 20,
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: 200,
-                              child: const Text(
-                                "Start Your Career with Us",
-                                style: TextStyle(
-                                  color: AppColors.primaryBlue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Image.asset(
-                          "assets/images/auth_vector.png",
-                          height: 100,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    CustomTextField(
-                      label: "First Name",
-                      controller: _firstNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your first name';
-                        }
-                        return null;
-                      },
-                    ),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_firstNameFocus),
-                      child: Focus(
-                        focusNode: _firstNameFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-                    
-                    CustomTextField(
-                      label: "Last Name",
-                      controller: _lastNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your last name';
-                        }
-                        return null;
-                      },
-                    ),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_lastNameFocus),
-                      child: Focus(
-                        focusNode: _lastNameFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-                    
-                    CustomDropdown(
-                      label: "Gender",
-                      hintText: "Select your gender",
-                      value: _selectedGender,
-                      items: _genderOptions,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedGender = newValue;
-                        });
-                      },
-                    ),
-                    
-                    CustomDatePicker(
-                      label: "Date of Birth",
-                      hintText: "Select your date of birth",
-                      selectedDate: _selectedDate,
-                      controller: _dateController,
-                      onTap: (_) => _selectDate(context),
-                    ),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_dateFocus),
-                      child: Focus(
-                        focusNode: _dateFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-                    
-                    CustomTextField(
-                      label: "Email",
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_emailFocus),
-                      child: Focus(
-                        focusNode: _emailFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-                    
-                    _buildPasswordField("Password", isConfirm: false),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_passwordFocus),
-                      child: Focus(
-                        focusNode: _passwordFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-                    
-                    _buildPasswordField("Confirm Password", isConfirm: true),
-                    Listener(
-                      onPointerDown: (_) => FocusScope.of(context).requestFocus(_confirmPasswordFocus),
-                      child: Focus(
-                        focusNode: _confirmPasswordFocus,
-                        child: Container(width: 0, height: 0),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _submitForm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SvgPicture.asset(
+                            "assets/images/findworkd.svg",
+                            height: 20,
                           ),
-                          child: _isLoading 
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                "Register",
-                                style: TextStyle(fontSize: 16, color: Colors.white),
-                              ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 20),
-                    
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10.0),
-                            child: Divider(
-                              color: Colors.grey.withOpacity(0.5),
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          "or Register using",
-                          style: TextStyle(
-                            color: Colors.grey.withOpacity(0.8),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 10.0),
-                            child: Divider(
-                              color: Colors.grey.withOpacity(0.5),
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSocialButton("assets/images/microsoft_logo.png", "Microsoft"),
-                        const SizedBox(width: 20),
-                        _buildSocialButton("assets/images/google_logo.png", "Google"),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15, bottom: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                          Text(
-                            "Already have an account? ",
-                            style: TextStyle(color: AppColors.primaryBlue),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, AppRoutes.signin);
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: 200,
                             child: const Text(
-                              "Login Here",
+                              "Start Your Career with Us",
                               style: TextStyle(
-                                color: AppColors.accentBlue,
+                                color: AppColors.primaryBlue,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          )
-                          ],
+                          ),
+                        ],
+                      ),
+                      Image.asset(
+                        "assets/images/auth_vector.png",
+                        height: 100,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  CustomTextField(
+                    label: "First Name",
+                    controller: _firstNameController,
+                    focusNode: _firstNameFocus,
+                    errorText: _firstNameError,
+                    onChanged: (val) {
+                      if (_firstNameError != null) {
+                        setState(() {
+                          _firstNameError = null;
+                        });
+                      }
+                    },
+                  ),
+                  
+                  CustomTextField(
+                    label: "Last Name",
+                    controller: _lastNameController,
+                    focusNode: _lastNameFocus,
+                    errorText: _lastNameError,
+                    onChanged: (val) {
+                      if (_lastNameError != null) {
+                        setState(() {
+                          _lastNameError = null;
+                        });
+                      }
+                    },
+                  ),
+                  
+                  // Gender dropdown with error display
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomDropdown(
+                        label: "Gender",
+                        hintText: "Select your gender",
+                        value: _selectedGender,
+                        items: _genderOptions,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedGender = newValue;
+                            _genderError = null;
+                          });
+                        },
+                      ),
+                      if (_genderError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 4, bottom: 8),
+                          child: Text(
+                            _genderError!,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
+                    ],
+                  ),
+                  
+                  // Date picker with error display
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomDatePicker(
+                        label: "Date of Birth",
+                        hintText: "Select your date of birth",
+                        selectedDate: _selectedDate,
+                        controller: _dateController,
+                        onTap: (_) {
+                          _selectDate(context);
+                          if (_dateError != null) {
+                            setState(() {
+                              _dateError = null;
+                            });
+                          }
+                        },
+                      ),
+                      if (_dateError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12, top: 4, bottom: 8),
+                          child: Text(
+                            _dateError!,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  
+                  CustomTextField(
+                    label: "Email",
+                    controller: _emailController,
+                    focusNode: _emailFocus,
+                    errorText: _emailError,
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (val) {
+                      if (_emailError != null) {
+                        setState(() {
+                          _emailError = null;
+                        });
+                      }
+                    },
+                  ),
+                  
+                  _buildPasswordField(),
+                  
+                  _buildConfirmPasswordField(),
+
+                  const SizedBox(height: 20),
+
+                  Center(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryBlue,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: _isLoading 
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "Register",
+                              style: TextStyle(fontSize: 16, color: Colors.white),
+                            ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 10.0),
+                          child: Divider(
+                            color: Colors.grey.withOpacity(0.5),
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        "or Register using",
+                        style: TextStyle(
+                          color: Colors.grey.withOpacity(0.8),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 10.0),
+                          child: Divider(
+                            color: Colors.grey.withOpacity(0.5),
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSocialButton("assets/images/microsoft_logo.png", "Microsoft"),
+                      const SizedBox(width: 20),
+                      _buildSocialButton("assets/images/google_logo.png", "Google"),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 15, bottom: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                        Text(
+                          "Already have an account? ",
+                          style: TextStyle(color: AppColors.primaryBlue),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, AppRoutes.signin);
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            "Login Here",
+                            style: TextStyle(
+                              color: AppColors.accentBlue,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -523,39 +629,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  Widget _buildPasswordField(String label, {required bool isConfirm}) {
+  Widget _buildPasswordField() {
     return CustomTextField(
-      label: label,
-      hintText: isConfirm ? "Confirm your password" : "Enter a strong password",
-      controller: isConfirm ? _confirmPasswordController : _passwordController,
-      obscureText: isConfirm ? !_isConfirmPasswordVisible : !_isPasswordVisible,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a password';
+      label: "Password",
+      hintText: "Enter a strong password",
+      controller: _passwordController,
+      focusNode: _passwordFocus,
+      obscureText: !_isPasswordVisible,
+      errorText: _passwordError,
+      onChanged: (val) {
+        if (_passwordError != null) {
+          setState(() {
+            _passwordError = null;
+          });
         }
-        if (!isConfirm && value.length < 6) {
-          return 'Password must be at least 6 characters';
-        }
-        if (isConfirm && value != _passwordController.text) {
-          return 'Passwords do not match';
-        }
-        return null;
       },
       suffixIcon: IconButton(
         icon: Icon(
-          isConfirm
-              ? (_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off)
-              : (_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
           size: 20,
           color: Colors.grey[600],
         ),
         onPressed: () {
           setState(() {
-            if (isConfirm) {
-              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
-            } else {
-              _isPasswordVisible = !_isPasswordVisible;
-            }
+            _isPasswordVisible = !_isPasswordVisible;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return CustomTextField(
+      label: "Confirm Password",
+      hintText: "Confirm your password",
+      controller: _confirmPasswordController,
+      focusNode: _confirmPasswordFocus,
+      obscureText: !_isConfirmPasswordVisible,
+      errorText: _confirmPasswordError,
+      onChanged: (val) {
+        if (_confirmPasswordError != null) {
+          setState(() {
+            _confirmPasswordError = null;
+          });
+        }
+      },
+      suffixIcon: IconButton(
+        icon: Icon(
+          _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          size: 20,
+          color: Colors.grey[600],
+        ),
+        onPressed: () {
+          setState(() {
+            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
           });
         },
       ),
